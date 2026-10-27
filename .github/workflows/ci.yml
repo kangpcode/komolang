@@ -1,0 +1,46 @@
+# Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+name: CI Komolang
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  test:
+    name: Uji (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout repositori
+        uses: actions/checkout@v4
+
+      - name: Pasang toolchain Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Format check
+        run: cargo fmt --all -- --check
+
+      - name: Clippy linter
+        run: cargo clippy --workspace --all-targets
+
+      - name: Bangun workspace
+        run: cargo build --workspace --all-targets
+
+      - name: Jalankan tes unit dan integrasi
+        run: cargo test --workspace --all-targets -- --nocapture

@@ -1,0 +1,9 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+paket utama
+
+impor "std/matematika"
+impor "std/cetak"
+
+publik fungsi hitung_faktorial() {
+}

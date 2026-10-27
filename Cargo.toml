@@ -1,0 +1,25 @@
+# Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+[workspace]
+members = [
+    "cli",
+    "compiler/komo_ast",
+    "compiler/komo_lexer",
+    "compiler/komo_parser",
+    "runtime/komo_runtime",
+    "tests",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+authors = ["Dhafa Nazula Permadi (kangpcode) <kangpcode@gmail.com>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/kangpcode/komolang"
+
+[workspace.dependencies]
+komo_ast = { path = "compiler/komo_ast" }
+komo_lexer = { path = "compiler/komo_lexer" }
+komo_parser = { path = "compiler/komo_parser" }
+komo_runtime = { path = "runtime/komo_runtime" }

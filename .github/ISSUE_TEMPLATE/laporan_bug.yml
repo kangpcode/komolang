@@ -1,0 +1,50 @@
+name: Laporan Bug
+description: Laporkan bug atau perilaku yang tidak semestinya pada Komolang.
+title: "[BUG]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Terima kasih telah melaporkan bug untuk membantu stabilitas Komolang!
+  - type: textarea
+    id: deskripsi
+    attributes:
+      label: Deskripsi Masalah
+      description: Jelaskan secara singkat dan jelas masalah apa yang Anda temui.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduksi
+    attributes:
+      label: Langkah Reproduksi / Kode Contoh
+      description: Kode Komolang minimal yang menyebabkan masalah tersebut.
+      placeholder: |
+        paket utama
+        fungsi utama() {
+            // kode pemicu bug
+        }
+    validations:
+      required: true
+  - type: textarea
+    id: hasil_aktual
+    attributes:
+      label: Hasil Aktual / Pesan Kesalahan
+      description: Pesan error atau perilaku compiler/runtime saat dijalankan.
+    validations:
+      required: true
+  - type: textarea
+    id: hasil_harapan
+    attributes:
+      label: Hasil yang Diharapkan
+      description: Perilaku apa yang seharusnya terjadi menurut spesifikasi.
+    validations:
+      required: true
+  - type: input
+    id: lingkungan
+    attributes:
+      label: Informasi Lingkungan
+      description: Versi OS, arsitektur CPU, dan versi Komolang (`komo --versi`).
+      placeholder: Linux x86_64, Komolang v0.1.0-dev
+    validations:
+      required: true

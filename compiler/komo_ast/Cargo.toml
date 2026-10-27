@@ -1,0 +1,9 @@
+[package]
+name = "komo_ast"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Abstract Syntax Tree (AST) definitions for the Komolang compiler"
+
+[dependencies]

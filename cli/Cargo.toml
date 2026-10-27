@@ -1,0 +1,17 @@
+[package]
+name = "komo"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Command-Line Interface for the Komolang toolchain"
+
+[[bin]]
+name = "komo"
+path = "src/main.rs"
+
+[dependencies]
+komo_ast = { workspace = true }
+komo_lexer = { workspace = true }
+komo_parser = { workspace = true }
+komo_runtime = { workspace = true }

@@ -1,0 +1,20 @@
+# Build artifacts
+/target/
+**/*.rs.bk
+*.swp
+*.bak
+*~
+
+# IDE and editor files
+.idea/
+.vscode/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Komolang build artifacts
+*.kobj
+*.kir
+komo.kunci.local

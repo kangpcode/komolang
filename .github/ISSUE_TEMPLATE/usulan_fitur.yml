@@ -1,0 +1,35 @@
+name: Usulan Fitur / RFC
+description: Usulkan ide sintaks baru, modul pustaka standar, atau kapabilitas toolchain.
+title: "[RFC/FITUR]: "
+labels: ["peningkatan", "rfc"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Sebelum mengusulkan sintaks baru, pastikan usulan mematuhi prinsip desain Komolang:
+        - Sintaks Bahasa Indonesia yang alami & konsisten.
+        - Satu cara yang jelas untuk melakukan satu hal.
+        - Mempertahankan kinerja tinggi dan keamanan memori.
+  - type: textarea
+    id: motivasi
+    attributes:
+      label: Motivasi & Latar Belakang
+      description: Masalah apa yang ingin dipecahkan atau nilai tambah apa yang dibawa?
+    validations:
+      required: true
+  - type: textarea
+    id: usulan_desain
+    attributes:
+      label: Usulan Desain & Contoh Sintaks
+      description: Bagaimana bentuk sintaks atau API yang diusulkan dalam kode Komolang?
+      placeholder: |
+        // Contoh kode usulan
+    validations:
+      required: true
+  - type: textarea
+    id: alternatif
+    attributes:
+      label: Alternatif yang Dipertimbangkan
+      description: Cara atau solusi lain yang sudah dipertimbangkan dan mengapa opsi ini lebih baik.
+    validations:
+      false

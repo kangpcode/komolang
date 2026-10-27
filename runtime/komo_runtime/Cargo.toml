@@ -1,0 +1,9 @@
+[package]
+name = "komo_runtime"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "High performance minimal runtime for Komolang (memory, green tasks, panic handling)"
+
+[dependencies]

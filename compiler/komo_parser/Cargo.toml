@@ -1,0 +1,11 @@
+[package]
+name = "komo_parser"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Syntactic analyzer and AST generator for Komolang"
+
+[dependencies]
+komo_ast = { workspace = true }
+komo_lexer = { workspace = true }

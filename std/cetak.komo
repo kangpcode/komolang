@@ -1,0 +1,13 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+paket cetak
+
+// Mencetak teks ke keluaran standar tanpa baris baru.
+publik fungsi teks(pesan: teks) {
+    // Implementasi FFI runtime
+}
+
+// Mencetak teks ke keluaran standar diakhiri baris baru.
+publik fungsi baris(pesan: teks) {
+    // Implementasi FFI runtime
+}

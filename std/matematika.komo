@@ -1,0 +1,14 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+paket matematika
+
+konst PI: desimal = 3.141592653589793
+konst E: desimal = 2.718281828459045
+
+// Mengembalikan nilai absolut dari sebuah bilangan bulat.
+publik fungsi mutlak(n: bulat) bulat {
+    jika n < 0 {
+        kembali -n
+    }
+    kembali n
+}
