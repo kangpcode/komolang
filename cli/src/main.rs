@@ -73,18 +73,24 @@ fn periksa_berkas(jalur: &str) {
 
     println!("Memeriksa berkas '{}'...", jalur);
 
-    let hasil = urai(&konten);
-    if hasil.berhasil() {
-        println!(
-            "✅ Sintaks valid! Paket: '{}', Impor: {}, Deklarasi: {}",
-            hasil.berkas.paket.nama.nama,
-            hasil.berkas.impor.len(),
-            hasil.berkas.deklarasi.len()
-        );
-    } else {
-        eprintln!("{}", render_semua(&hasil.diagnostik, jalur, &konten));
+    let hasil_urai = urai(&konten);
+    if !hasil_urai.berhasil() {
+        eprintln!("{}", render_semua(&hasil_urai.diagnostik, jalur, &konten));
         process::exit(1);
     }
+
+    let hasil_sema = komo_sema::periksa(&hasil_urai.berkas);
+    if !hasil_sema.berhasil() {
+        eprintln!("{}", render_semua(&hasil_sema.diagnostik, jalur, &konten));
+        process::exit(1);
+    }
+
+    println!(
+        "✅ Sintaks dan semantik valid! Paket: '{}', Impor: {}, Deklarasi: {}",
+        hasil_urai.berkas.paket.nama.nama,
+        hasil_urai.berkas.impor.len(),
+        hasil_urai.berkas.deklarasi.len()
+    );
 }
 
 #[cfg(test)]
