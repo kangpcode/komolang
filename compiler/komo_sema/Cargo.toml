@@ -1,0 +1,13 @@
+# Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+[package]
+name = "komo_sema"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Semantic analysis, type checking, and symbol resolution for Komolang"
+
+[dependencies]
+komo_ast = { workspace = true }
+komo_diag = { workspace = true }

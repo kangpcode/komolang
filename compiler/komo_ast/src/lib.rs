@@ -14,7 +14,7 @@ pub const PRIORITAS_PRIMER: u8 = 9;
 
 /// Lokasi dalam kode sumber: offset byte `[awal, akhir)` serta baris/kolom awal (basis 1,
 /// kolom dihitung dalam karakter).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Rentang {
     pub awal: usize,
     pub akhir: usize,

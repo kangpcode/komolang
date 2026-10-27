@@ -46,6 +46,14 @@ name = "komo_runtime"
 version = "0.1.0"
 
 [[package]]
+name = "komo_sema"
+version = "0.1.0"
+dependencies = [
+ "komo_ast",
+ "komo_diag",
+]
+
+[[package]]
 name = "komo_tests"
 version = "0.1.0"
 dependencies = [

@@ -55,6 +55,33 @@ pub mod kode {
     pub const SALURAN_TANPA_TIPE: &str = "P0017";
     pub const PAKET_HILANG: &str = "P0018";
     pub const TERLALU_DALAM: &str = "P0019";
+
+    // Semantik (S = Semantik)
+    pub const TIPE_TIDAK_COCOK: &str = "S0001";
+    pub const SIMBOL_TIDAK_DITEMUKAN: &str = "S0002";
+    pub const SIMBOL_DUPLIKAT: &str = "S0003";
+    pub const MUTASI_VARIABEL_IMUTABEL: &str = "S0004";
+    pub const PENGGUNAAN_SETELAH_PINDAH: &str = "S0005";
+    pub const PEMINJAMAN_KONFLIK: &str = "S0006";
+    pub const CABANG_TIDAK_EKSAUSTIF: &str = "S0007";
+    pub const BUKAN_FUNGSI: &str = "S0008";
+    pub const JUMLAH_ARGUMEN_SALAH: &str = "S0009";
+    pub const BIDANG_TIDAK_DITEMUKAN: &str = "S0010";
+    pub const BUKAN_STRUKTUR: &str = "S0011";
+    pub const BUKAN_LARIK: &str = "S0012";
+    pub const INDEKS_BUKAN_BULAT: &str = "S0013";
+    pub const KONDISI_BUKAN_BOOL: &str = "S0014";
+    pub const OPERATOR_TIDAK_DIDUKUNG: &str = "S0015";
+    pub const RETURN_TIDAK_COCOK: &str = "S0016";
+    pub const RETURN_DI_LUAR_FUNGSI: &str = "S0017";
+    pub const ANTARMUKA_TIDAK_TERPENUHI: &str = "S0018";
+    pub const VARIAN_ENUM_TIDAK_DITEMUKAN: &str = "S0019";
+    pub const JUMLAH_ARGUMEN_VARIAN_SALAH: &str = "S0020";
+    pub const AKSES_PRIVAT: &str = "S0021";
+    pub const TIPE_TIDAK_DITEMUKAN: &str = "S0022";
+    pub const JUMLAH_ARGUMEN_TIPE_SALAH: &str = "S0023";
+    pub const JALUR_MODUL_TIDAK_VALID: &str = "S0024";
+    pub const INFERENSI_GAGAL: &str = "S0025";
 }
 
 /// Satu pesan diagnostik dengan lokasi dan saran perbaikan opsional.

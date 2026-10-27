@@ -7,6 +7,7 @@ members = [
     "compiler/komo_diag",
     "compiler/komo_lexer",
     "compiler/komo_parser",
+    "compiler/komo_sema",
     "runtime/komo_runtime",
     "tests",
 ]
@@ -25,3 +26,4 @@ komo_diag = { path = "compiler/komo_diag" }
 komo_lexer = { path = "compiler/komo_lexer" }
 komo_parser = { path = "compiler/komo_parser" }
 komo_runtime = { path = "runtime/komo_runtime" }
+komo_sema = { path = "compiler/komo_sema" }
