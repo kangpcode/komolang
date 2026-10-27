@@ -49,18 +49,30 @@ fn main() {
         "bangun" => {
             if args.len() < 3 {
                 eprintln!("Kesalahan: Berikan jalur berkas .komo untuk dikompilasi.");
-                eprintln!("Contoh: komo bangun berkas.komo [-o nama_biner] [--optimasi]");
+                eprintln!("Contoh: komo bangun berkas.komo [-o nama_biner] [--backend=asm|cranelift] [--optimasi]");
                 process::exit(1);
             }
             let berkas = &args[2];
             let optimasi = args.iter().any(|a| a == "--optimasi" || a == "-O");
+            let pakai_asm = args.iter().any(|a| a == "--backend=asm");
             let mut jalur_keluar = PathBuf::from(berkas.trim_end_matches(".komo"));
             for i in 0..args.len() {
                 if args[i] == "-o" && i + 1 < args.len() {
                     jalur_keluar = PathBuf::from(&args[i + 1]);
                 }
             }
-            bangun_berkas(berkas, &jalur_keluar, optimasi);
+            bangun_berkas(berkas, &jalur_keluar, optimasi, pakai_asm);
+        }
+        "asm" => {
+            if args.len() < 3 {
+                eprintln!("Kesalahan: Berikan jalur berkas .komo untuk menghasilkan kode assembly.");
+                eprintln!("Contoh: komo asm berkas.komo [--arsitektur=x86_64|arm64] [--optimasi]");
+                process::exit(1);
+            }
+            let berkas = &args[2];
+            let optimasi = args.iter().any(|a| a == "--optimasi" || a == "-O");
+            let arm64 = args.iter().any(|a| a == "--arsitektur=arm64" || a == "--target=arm64");
+            tampilkan_assembly(berkas, optimasi, arm64);
         }
         "jalankan" => {
             if args.len() < 3 {
@@ -89,8 +101,9 @@ fn tampilkan_bantuan() {
     println!("Penggunaan: komo [perintah] [opsi]");
     println!();
     println!("Perintah Utama:");
-    println!("  bangun <berkas.komo>    Mengompilasi kode Komolang menjadi biner native executable (-o, --optimasi)");
+    println!("  bangun <berkas.komo>    Mengompilasi menjadi executable (--backend=asm|cranelift, -o, --optimasi)");
     println!("  jalankan <berkas.komo>  Menjalankan program Komolang langsung via mesin JIT native (--optimasi)");
+    println!("  asm <berkas.komo>       Mencetak kode assembly x86_64 / ARM64 mandiri ke stdout (--arsitektur=arm64)");
     println!("  periksa <berkas.komo>   Memeriksa sintaks leksikal dan tata bahasa (--dump-kir)");
     println!("  ir <berkas.komo>        Menghasilkan dan menampilkan dump KIR SSA (--optimasi)");
     println!("  versi                   Menampilkan informasi versi Komolang");
@@ -141,8 +154,27 @@ fn parsing_dan_lowering(jalur: &str, optimasi: bool) -> ModulIr {
     modul_ir
 }
 
-fn bangun_berkas(jalur: &str, output: &Path, optimasi: bool) {
+fn bangun_berkas(jalur: &str, output: &Path, optimasi: bool, pakai_asm: bool) {
     let modul_ir = parsing_dan_lowering(jalur, optimasi);
+
+    if pakai_asm {
+        println!(
+            "Mengompilasi '{}' menjadi biner native '{}' (backend: ASM internal)...",
+            jalur,
+            output.display()
+        );
+        match komo_asm::bangun_executable_asm(&modul_ir, output) {
+            Ok(path) => {
+                println!("✅ Berhasil membangun biner native (ASM): {}", path.display());
+            }
+            Err(e) => {
+                eprintln!("❌ Gagal membangun biner ASM: {}", e);
+                process::exit(1);
+            }
+        }
+        return;
+    }
+
     let mut target = KonfigurasiTarget::untuk_host();
     target.optimasi = optimasi;
 
@@ -162,6 +194,17 @@ fn bangun_berkas(jalur: &str, output: &Path, optimasi: bool) {
             process::exit(1);
         }
     }
+}
+
+fn tampilkan_assembly(jalur: &str, optimasi: bool, arm64: bool) {
+    let modul_ir = parsing_dan_lowering(jalur, optimasi);
+    let target = if arm64 {
+        komo_asm::TargetArsitekturAsm::AArch64
+    } else {
+        komo_asm::TargetArsitekturAsm::X86_64
+    };
+    let asm = komo_asm::kompilasi_ke_assembly(&modul_ir, target);
+    print!("{}", asm);
 }
 
 fn jalankan_berkas(jalur: &str, optimasi: bool) {
