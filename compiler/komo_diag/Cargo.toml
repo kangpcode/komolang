@@ -1,0 +1,10 @@
+[package]
+name = "komo_diag"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Diagnostik dan pesan error berbahasa Indonesia untuk compiler Komolang"
+
+[dependencies]
+komo_ast = { workspace = true }

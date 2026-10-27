@@ -8,3 +8,4 @@ description = "Lexical analyzer and token definitions for Komolang"
 
 [dependencies]
 komo_ast = { workspace = true }
+komo_diag = { workspace = true }

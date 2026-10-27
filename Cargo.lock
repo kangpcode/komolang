@@ -17,10 +17,18 @@ name = "komo_ast"
 version = "0.1.0"
 
 [[package]]
+name = "komo_diag"
+version = "0.1.0"
+dependencies = [
+ "komo_ast",
+]
+
+[[package]]
 name = "komo_lexer"
 version = "0.1.0"
 dependencies = [
  "komo_ast",
+ "komo_diag",
 ]
 
 [[package]]
@@ -28,6 +36,7 @@ name = "komo_parser"
 version = "0.1.0"
 dependencies = [
  "komo_ast",
+ "komo_diag",
  "komo_lexer",
 ]
 

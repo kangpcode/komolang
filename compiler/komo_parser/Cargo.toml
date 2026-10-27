@@ -8,4 +8,5 @@ description = "Syntactic analyzer and AST generator for Komolang"
 
 [dependencies]
 komo_ast = { workspace = true }
+komo_diag = { workspace = true }
 komo_lexer = { workspace = true }
