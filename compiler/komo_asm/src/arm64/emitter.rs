@@ -9,9 +9,7 @@ use std::fmt::Write;
 use komo_ir::{FungsiIr, IdNilai, Instruksi, Konstanta, ModulIr, OpBiner, OpUnari, Terminator};
 
 use crate::arm64::register::{POOL_REGISTER_ALOKASI_ARM64, REG_PARAMETER_ARM64};
-use crate::regalloc::{
-    alokasikan_register_linear_scan, HasilAlokasiRegister, LokasiNilai,
-};
+use crate::regalloc::alokasikan_register_linear_scan;
 
 /// Menghasilkan seluruh kode assembly ARM64 untuk `ModulIr`.
 pub fn emit_arm64(modul: &ModulIr) -> String {

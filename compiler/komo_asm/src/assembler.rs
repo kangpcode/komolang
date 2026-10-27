@@ -6,6 +6,9 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+static PENGHITUNG_BERKAS_ASM: AtomicUsize = AtomicUsize::new(1);
 
 use crate::format::elf::{buat_objek_elf64, ArsitekturElf, SimbolElf};
 use crate::format::macho::{buat_objek_macho64, ArsitekturMachO};
@@ -66,8 +69,10 @@ pub fn rakit_dan_tautkan_asm(
     jalur_keluaran: &Path,
 ) -> Result<PathBuf, String> {
     let dir_temp = std::env::temp_dir();
-    let jalur_s = dir_temp.join(format!("komo_asm_{}.s", nama_modul));
-    let jalur_rt_c = dir_temp.join(format!("komo_asm_{}_rt.c", nama_modul));
+    let id_unik = PENGHITUNG_BERKAS_ASM.fetch_add(1, Ordering::SeqCst);
+    let pid = std::process::id();
+    let jalur_s = dir_temp.join(format!("komo_asm_{}_{}_{}.s", nama_modul, pid, id_unik));
+    let jalur_rt_c = dir_temp.join(format!("komo_asm_{}_{}_{}_rt.c", nama_modul, pid, id_unik));
 
     // 1. Tulis berkas teks assembly .s
     fs::write(&jalur_s, kode_asm)

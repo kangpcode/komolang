@@ -82,7 +82,7 @@ fn tes_emisi_assembly_x86_64_sintaks_dan_instruksi() {
         publik fungsi kalkulasi(a: bulat, b: bulat) bulat {
             jika a > b {
                 kembali a - b
-            } selain itu {
+            } lainnya {
                 kembali a + b
             }
         }
@@ -327,7 +327,7 @@ fn tes_eksekusi_biner_native_asm_kalkulasi_aritmatika_dan_logika() {
             var sisa: bulat = x % 3
             jika sisa > 0 {
                 kembali y + 10
-            } selain itu {
+            } lainnya {
                 kembali y
             }
         }
