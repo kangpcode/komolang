@@ -4,10 +4,9 @@
 //! Menghapus instruksi murni yang nilainya tidak pernah dibaca,
 //! serta mengeliminasi blok dasar yang tidak terjangkau (unreachable).
 
-use std::collections::{HashSet, VecDeque};
 use crate::fungsi::FungsiIr;
-use crate::instruksi::{Instruksi, Terminator};
-use crate::nilai::{IdBlok, IdNilai};
+use crate::instruksi::Instruksi;
+use std::collections::{HashSet, VecDeque};
 
 /// Menjalankan DCE pada satu fungsi KIR.
 /// Mengembalikan true jika ada kode mati yang berhasil dieliminasi.

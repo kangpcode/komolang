@@ -3,10 +3,10 @@
 //! Dump teks representasi KIR yang mudah dibaca manusia (`--dump-kir`).
 //! Mengonversi ModulIr dan FungsiIr menjadi format SSA tekstual yang terstruktur.
 
-use std::fmt::Write;
 use crate::fungsi::FungsiIr;
 use crate::instruksi::{Instruksi, Terminator};
 use crate::modul::ModulIr;
+use std::fmt::Write;
 
 /// Menghasilkan representasi string SSA lengkap untuk suatu modul KIR.
 pub fn cetak_modul(modul: &ModulIr) -> String {
@@ -83,7 +83,12 @@ fn cetak_instruksi(out: &mut String, inst: &Instruksi) {
         Instruksi::Konst(k) => {
             let _ = write!(out, "konst {} : {}", k, k.tipe());
         }
-        Instruksi::Biner { op, kiri, kanan, tipe } => {
+        Instruksi::Biner {
+            op,
+            kiri,
+            kanan,
+            tipe,
+        } => {
             let _ = write!(out, "biner.{} {}, {} : {}", op, kiri, kanan, tipe);
         }
         Instruksi::Unari { op, operan, tipe } => {
@@ -104,7 +109,11 @@ fn cetak_instruksi(out: &mut String, inst: &Instruksi) {
         Instruksi::AksesIndeks { target, indeks } => {
             let _ = write!(out, "akses_indeks {}, {}", target, indeks);
         }
-        Instruksi::Panggil { fungsi, argumen, tipe_kembali } => {
+        Instruksi::Panggil {
+            fungsi,
+            argumen,
+            tipe_kembali,
+        } => {
             let _ = write!(out, "panggil @{}(", fungsi);
             for (i, a) in argumen.iter().enumerate() {
                 if i > 0 {
@@ -134,7 +143,11 @@ fn cetak_terminator(out: &mut String, term: &Terminator) {
         Terminator::Lompat(target) => {
             let _ = write!(out, "lompat {}", target);
         }
-        Terminator::Cabang { kondisi, jika_benar, jika_salah } => {
+        Terminator::Cabang {
+            kondisi,
+            jika_benar,
+            jika_salah,
+        } => {
             let _ = write!(out, "cabang {}, {}, {}", kondisi, jika_benar, jika_salah);
         }
         Terminator::Kembali(Some(val)) => {

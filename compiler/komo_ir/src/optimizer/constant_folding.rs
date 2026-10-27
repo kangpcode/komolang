@@ -4,10 +4,10 @@
 //! Menghitung nilai instruksi dengan operan konstan pada saat kompilasi
 //! dan menyederhanakan percabangan berkondisi konstan.
 
-use std::collections::HashMap;
 use crate::fungsi::FungsiIr;
 use crate::instruksi::{Instruksi, OpBiner, OpUnari, Terminator};
 use crate::nilai::{IdNilai, Konstanta};
+use std::collections::HashMap;
 
 /// Menjalankan optimisasi constant folding pada satu fungsi KIR.
 /// Mengembalikan true jika ada perubahan yang dilakukan.
@@ -38,7 +38,9 @@ pub fn jalankan_constant_folding(f: &mut FungsiIr) -> bool {
             let mut pengganti_konst = None;
 
             match inst {
-                Instruksi::Biner { op, kiri, kanan, .. } => {
+                Instruksi::Biner {
+                    op, kiri, kanan, ..
+                } => {
                     let k_kiri = nilai_konstan.get(kiri);
                     let k_kanan = nilai_konstan.get(kanan);
 
@@ -49,7 +51,8 @@ pub fn jalankan_constant_folding(f: &mut FungsiIr) -> bool {
                     } else if let Some(r) = k_kanan {
                         // Penyederhanaan aljabar: x + 0 = x, x * 1 = x, x * 0 = 0
                         match (op, r) {
-                            (OpBiner::Tambah, Konstanta::Bulat(0)) | (OpBiner::Kurang, Konstanta::Bulat(0)) => {
+                            (OpBiner::Tambah, Konstanta::Bulat(0))
+                            | (OpBiner::Kurang, Konstanta::Bulat(0)) => {
                                 // x + 0 => x (bisa dipropagasikan jika x konstan)
                             }
                             (OpBiner::Kali, Konstanta::Bulat(0)) => {
@@ -79,7 +82,12 @@ pub fn jalankan_constant_folding(f: &mut FungsiIr) -> bool {
         }
 
         // 3. Lipat percabangan jika kondisinya sudah pasti konstan
-        if let Some(Terminator::Cabang { kondisi, jika_benar, jika_salah }) = &b.terminator {
+        if let Some(Terminator::Cabang {
+            kondisi,
+            jika_benar,
+            jika_salah,
+        }) = &b.terminator
+        {
             if let Some(Konstanta::Bool(b_val)) = nilai_konstan.get(kondisi) {
                 let target = if *b_val { *jika_benar } else { *jika_salah };
                 b.terminator = Some(Terminator::Lompat(target));

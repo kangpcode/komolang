@@ -34,7 +34,10 @@ impl BlokDasar {
 
     /// Menambahkan instruksi ke akhir blok.
     pub fn tambah_instruksi(&mut self, hasil: Option<IdNilai>, inst: Instruksi) {
-        assert!(self.terminator.is_none(), "Tidak dapat menambahkan instruksi ke blok yang sudah memiliki terminator");
+        assert!(
+            self.terminator.is_none(),
+            "Tidak dapat menambahkan instruksi ke blok yang sudah memiliki terminator"
+        );
         self.instruksi.push((hasil, inst));
     }
 

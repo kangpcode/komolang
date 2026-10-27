@@ -11,7 +11,7 @@ pub mod tipe;
 
 pub use pemeriksa::PemeriksaSemantik;
 pub use simbol::{JenisSimbol, Simbol, TabelSimbol};
-pub use tipe::SemTipe;
+pub use tipe::{tipe_dari_ast, SemTipe};
 
 use komo_ast::{BerkasProgram, Rentang};
 use komo_diag::Diagnostik;

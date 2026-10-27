@@ -3,10 +3,10 @@
 //! Representasi fungsi pada KIR.
 //! Fungsi berisi parameter, blok awal, dan daftar blok dasar SSA.
 
-use std::collections::HashMap;
 use crate::blok::BlokDasar;
 use crate::nilai::{IdBlok, IdNilai};
 use crate::tipe::IrTipe;
+use std::collections::HashMap;
 
 /// Parameter fungsi pada tingkat IR.
 #[derive(Debug, Clone, PartialEq)]
@@ -64,11 +64,7 @@ impl FungsiIr {
     /// Menambahkan parameter baru ke fungsi dan mengalokasikan ID nilainya.
     pub fn tambah_parameter(&mut self, nama: String, tipe: IrTipe) -> IdNilai {
         let nilai = self.alokasikan_nilai();
-        self.parameter.push(ParameterIr {
-            nilai,
-            nama,
-            tipe,
-        });
+        self.parameter.push(ParameterIr { nilai, nama, tipe });
         nilai
     }
 

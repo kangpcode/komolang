@@ -4,10 +4,10 @@
 //! Mempromosikan alokasi variabel lokal stack (`alloca`) menjadi register nilai SSA murni,
 //! mengeliminasi pasangan instruksi `simpan` dan `muat` yang berulang.
 
-use std::collections::{HashMap, HashSet};
 use crate::fungsi::FungsiIr;
 use crate::instruksi::Instruksi;
 use crate::nilai::IdNilai;
+use std::collections::{HashMap, HashSet};
 
 /// Menjalankan optimisasi mem2reg pada satu fungsi KIR.
 /// Mengembalikan true jika ada promosi memori yang berhasil dilakukan.
@@ -30,10 +30,10 @@ pub fn jalankan_mem2reg(f: &mut FungsiIr) -> bool {
     for b in &f.blok {
         for (_, inst) in &b.instruksi {
             match inst {
-                Instruksi::Muat { penunjuk, .. } => {
+                Instruksi::Muat { .. } => {
                     // Valid
                 }
-                Instruksi::Simpan { penunjuk, nilai } => {
+                Instruksi::Simpan { penunjuk: _, nilai } => {
                     // Jika pointer alloca disimpan sebagai nilai ke tempat lain, pointer bocor
                     if kandidat_alloca.contains(nilai) {
                         alloca_bocor.insert(*nilai);
@@ -50,10 +50,8 @@ pub fn jalankan_mem2reg(f: &mut FungsiIr) -> bool {
         }
     }
 
-    let alloca_valid: HashSet<IdNilai> = kandidat_alloca
-        .difference(&alloca_bocor)
-        .copied()
-        .collect();
+    let alloca_valid: HashSet<IdNilai> =
+        kandidat_alloca.difference(&alloca_bocor).copied().collect();
 
     if alloca_valid.is_empty() {
         return false;

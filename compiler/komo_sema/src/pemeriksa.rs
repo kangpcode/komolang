@@ -868,7 +868,7 @@ impl PemeriksaSemantik {
                     argumen.iter().map(|a| self.evaluasi_ekspresi(a)).collect();
 
                 // 1. Cek panggilan konstruktor/fungsi bawaan seperti `saluran`, `sukses`, `gagal`, `ada`
-                if let JenisEkspresi::Pengenal(id) = &fungsi.jenis {
+                let konstruktor_bawaan = if let JenisEkspresi::Pengenal(id) = &fungsi.jenis {
                     match id.nama.as_str() {
                         "saluran" => {
                             let dalam = if !argumen_tipe.is_empty() {
@@ -876,54 +876,59 @@ impl PemeriksaSemantik {
                             } else {
                                 SemTipe::Bulat
                             };
-                            return SemTipe::Saluran(Box::new(dalam));
+                            Some(SemTipe::Saluran(Box::new(dalam)))
                         }
                         "sukses" => {
                             let isi = tipe_argumen.first().cloned().unwrap_or(SemTipe::Kosong);
-                            return SemTipe::Hasil {
+                            Some(SemTipe::Hasil {
                                 sukses: Box::new(isi),
                                 gagal: Box::new(SemTipe::Teks),
-                            };
+                            })
                         }
                         "gagal" => {
                             let err = tipe_argumen.first().cloned().unwrap_or(SemTipe::Teks);
-                            return SemTipe::Hasil {
+                            Some(SemTipe::Hasil {
                                 sukses: Box::new(SemTipe::Desimal),
                                 gagal: Box::new(err),
-                            };
+                            })
                         }
                         "ada" => {
                             let isi = tipe_argumen.first().cloned().unwrap_or(SemTipe::Kosong);
-                            return SemTipe::Mungkin(Box::new(isi));
+                            Some(SemTipe::Mungkin(Box::new(isi)))
                         }
-                        _ => {}
+                        _ => None,
                     }
-                }
+                } else {
+                    None
+                };
 
-                // 2. Cek pemanggilan metode atau fungsi biasa
-                let t_fungsi = self.evaluasi_ekspresi(fungsi);
-                match t_fungsi {
-                    SemTipe::Fungsi {
-                        parameter,
-                        kembalian,
-                    } => {
-                        if parameter.len() != tipe_argumen.len() {
-                            self.lapor(
-                                Diagnostik::galat(
-                                    kode::JUMLAH_ARGUMEN_SALAH,
-                                    format!(
+                if let Some(t_bawaan) = konstruktor_bawaan {
+                    t_bawaan
+                } else {
+                    // 2. Cek pemanggilan metode atau fungsi biasa
+                    let t_fungsi = self.evaluasi_ekspresi(fungsi);
+                    match t_fungsi {
+                        SemTipe::Fungsi {
+                            parameter,
+                            kembalian,
+                        } => {
+                            if parameter.len() != tipe_argumen.len() {
+                                self.lapor(
+                                    Diagnostik::galat(
+                                        kode::JUMLAH_ARGUMEN_SALAH,
+                                        format!(
                                         "pemanggilan memerlukan {} argumen, tetapi diberikan {}",
                                         parameter.len(),
                                         tipe_argumen.len()
                                     ),
-                                    e.rentang,
-                                )
-                                .dengan_saran("periksa daftar parameter fungsi yang dipanggil"),
-                            );
-                        } else {
-                            for (p_tipe, a_tipe) in parameter.iter().zip(tipe_argumen.iter()) {
-                                if !a_tipe.cocok_dengan(p_tipe) {
-                                    self.lapor(
+                                        e.rentang,
+                                    )
+                                    .dengan_saran("periksa daftar parameter fungsi yang dipanggil"),
+                                );
+                            } else {
+                                for (p_tipe, a_tipe) in parameter.iter().zip(tipe_argumen.iter()) {
+                                    if !a_tipe.cocok_dengan(p_tipe) {
+                                        self.lapor(
                                         Diagnostik::galat(
                                             kode::TIPE_TIDAK_COCOK,
                                             format!(
@@ -935,27 +940,28 @@ impl PemeriksaSemantik {
                                         )
                                         .dengan_saran("sesuaikan tipe argumen yang dioper"),
                                     );
+                                    }
                                 }
                             }
+                            *kembalian
                         }
-                        *kembalian
-                    }
-                    SemTipe::Galat => SemTipe::Galat,
-                    lain => {
-                        self.lapor(
-                            Diagnostik::galat(
-                                kode::BUKAN_FUNGSI,
-                                format!(
-                                    "tipe '{}' bukan fungsi dan tidak dapat dipanggil",
-                                    lain.nama()
+                        SemTipe::Galat => SemTipe::Galat,
+                        lain => {
+                            self.lapor(
+                                Diagnostik::galat(
+                                    kode::BUKAN_FUNGSI,
+                                    format!(
+                                        "tipe '{}' bukan fungsi dan tidak dapat dipanggil",
+                                        lain.nama()
+                                    ),
+                                    fungsi.rentang,
+                                )
+                                .dengan_saran(
+                                    "hanya fungsi atau metode yang dapat dipanggil dengan '()'",
                                 ),
-                                fungsi.rentang,
-                            )
-                            .dengan_saran(
-                                "hanya fungsi atau metode yang dapat dipanggil dengan '()'",
-                            ),
-                        );
-                        SemTipe::Galat
+                            );
+                            SemTipe::Galat
+                        }
                     }
                 }
             }

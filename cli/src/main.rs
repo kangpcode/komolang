@@ -31,7 +31,17 @@ fn main() {
                 eprintln!("Contoh: komo periksa berkas.komo");
                 process::exit(1);
             }
-            periksa_berkas(&args[2]);
+            let dump_kir = args.iter().any(|a| a == "--dump-kir");
+            periksa_berkas(&args[2], dump_kir);
+        }
+        "ir" => {
+            if args.len() < 3 {
+                eprintln!("Kesalahan: Berikan jalur berkas .komo untuk menghasilkan IR.");
+                eprintln!("Contoh: komo ir berkas.komo [--optimasi]");
+                process::exit(1);
+            }
+            let optimasi = args.iter().any(|a| a == "--optimasi" || a == "-O");
+            cetak_kir(&args[2], optimasi);
         }
         perintah_tak_dikenal => {
             eprintln!("Perintah tidak dikenal: '{}'", perintah_tak_dikenal);
@@ -50,7 +60,8 @@ fn tampilkan_bantuan() {
     println!("Penggunaan: komo [perintah] [opsi]");
     println!();
     println!("Perintah Utama:");
-    println!("  periksa <berkas.komo>   Memeriksa sintaks leksikal dan tata bahasa");
+    println!("  periksa <berkas.komo>   Memeriksa sintaks leksikal dan tata bahasa (--dump-kir)");
+    println!("  ir <berkas.komo>        Menghasilkan dan menampilkan dump KIR SSA (--optimasi)");
     println!("  versi                   Menampilkan informasi versi Komolang");
     println!("  bantuan                 Menampilkan pesan bantuan ini");
     println!();
@@ -62,7 +73,7 @@ fn tampilkan_bantuan() {
     println!("  format                  Memformat berkas kode sumber Komolang");
 }
 
-fn periksa_berkas(jalur: &str) {
+fn periksa_berkas(jalur: &str, dump_kir: bool) {
     let konten = match fs::read_to_string(jalur) {
         Ok(k) => k,
         Err(e) => {
@@ -91,6 +102,57 @@ fn periksa_berkas(jalur: &str) {
         hasil_urai.berkas.impor.len(),
         hasil_urai.berkas.deklarasi.len()
     );
+
+    if dump_kir {
+        let modul_ir = komo_ir::turunkan_ke_kir(&hasil_urai.berkas, &hasil_sema);
+        if let Err(galat_verif) = komo_ir::verifikasi_modul(&modul_ir) {
+            eprintln!("❌ Galat Verifikasi KIR:");
+            for g in galat_verif {
+                eprintln!("  - {}", g);
+            }
+            process::exit(1);
+        }
+        println!("\n{}", komo_ir::cetak_modul(&modul_ir));
+    }
+}
+
+fn cetak_kir(jalur: &str, optimasi: bool) {
+    let konten = match fs::read_to_string(jalur) {
+        Ok(k) => k,
+        Err(e) => {
+            eprintln!("Gagal membaca berkas '{}': {}", jalur, e);
+            process::exit(1);
+        }
+    };
+
+    let hasil_urai = urai(&konten);
+    if !hasil_urai.berhasil() {
+        eprintln!("{}", render_semua(&hasil_urai.diagnostik, jalur, &konten));
+        process::exit(1);
+    }
+
+    let hasil_sema = komo_sema::periksa(&hasil_urai.berkas);
+    if !hasil_sema.berhasil() {
+        eprintln!("{}", render_semua(&hasil_sema.diagnostik, jalur, &konten));
+        process::exit(1);
+    }
+
+    let mut modul_ir = komo_ir::turunkan_ke_kir(&hasil_urai.berkas, &hasil_sema);
+
+    if optimasi {
+        let pengoptimal = komo_ir::Pengoptimal::baru(2);
+        pengoptimal.optimalkan_modul(&mut modul_ir);
+    }
+
+    if let Err(galat_verif) = komo_ir::verifikasi_modul(&modul_ir) {
+        eprintln!("❌ Galat Verifikasi KIR:");
+        for g in galat_verif {
+            eprintln!("  - {}", g);
+        }
+        process::exit(1);
+    }
+
+    println!("{}", komo_ir::cetak_modul(&modul_ir));
 }
 
 #[cfg(test)]

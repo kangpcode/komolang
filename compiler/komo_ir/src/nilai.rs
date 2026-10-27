@@ -2,8 +2,8 @@
 
 //! Identifikator nilai SSA, blok dasar, dan konstanta literal pada KIR.
 
-use std::fmt;
 use crate::tipe::IrTipe;
+use std::fmt;
 
 /// Identifikator unik untuk nilai register SSA (misalnya `%0`, `%1`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]

@@ -5,6 +5,12 @@
 #[cfg(test)]
 mod tes_fuzzing;
 #[cfg(test)]
+mod tes_ir_optimizer;
+#[cfg(test)]
+mod tes_ir_valid;
+#[cfg(test)]
+mod tes_ir_verifier;
+#[cfg(test)]
 mod tes_leksikal;
 #[cfg(test)]
 mod tes_pengurai_galat;

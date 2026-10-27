@@ -3,9 +3,9 @@
 //! Instruksi dan Terminator untuk Komo Intermediate Representation (KIR).
 //! Setiap instruksi beroperasi pada nilai SSA, dan setiap blok diakhiri oleh satu terminator.
 
-use std::fmt;
 use crate::nilai::{IdBlok, IdNilai, Konstanta};
 use crate::tipe::IrTipe;
+use std::fmt;
 
 /// Operator biner aritmatika, perbandingan, dan logika pada tingkat IR.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -90,25 +90,13 @@ pub enum Instruksi {
     /// Alokasi memori stack lokal: `%ptr = alloca <tipe>`
     Alloca(IrTipe),
     /// Memuat nilai dari penunjuk memori: `%val = muat <tipe>, <penunjuk>`
-    Muat {
-        tipe: IrTipe,
-        penunjuk: IdNilai,
-    },
+    Muat { tipe: IrTipe, penunjuk: IdNilai },
     /// Menyimpan nilai ke penunjuk memori: `simpan <nilai>, <penunjuk>`
-    Simpan {
-        nilai: IdNilai,
-        penunjuk: IdNilai,
-    },
+    Simpan { nilai: IdNilai, penunjuk: IdNilai },
     /// Menghitung alamat bidang ke-N pada struktur: `%ptr = akses_bidang <struktur>, <indeks>`
-    AksesBidang {
-        struktur: IdNilai,
-        indeks: usize,
-    },
+    AksesBidang { struktur: IdNilai, indeks: usize },
     /// Menghitung alamat elemen larik berdasarkan indeks: `%ptr = akses_indeks <larik>, <indeks>`
-    AksesIndeks {
-        target: IdNilai,
-        indeks: IdNilai,
-    },
+    AksesIndeks { target: IdNilai, indeks: IdNilai },
     /// Pemanggilan fungsi: `%val = panggil @nama(<argumen>)`
     Panggil {
         fungsi: String,
@@ -122,10 +110,7 @@ pub enum Instruksi {
         masukan: Vec<(IdNilai, IdBlok)>,
     },
     /// Konversi tipe data konkret (misalnya i64 ke f64): `%val = cast <asal> ke <tipe>`
-    Cast {
-        asal: IdNilai,
-        tipe_tujuan: IrTipe,
-    },
+    Cast { asal: IdNilai, tipe_tujuan: IrTipe },
 }
 
 impl Instruksi {
@@ -133,23 +118,19 @@ impl Instruksi {
     pub fn tipe_hasil(&self) -> Option<IrTipe> {
         match self {
             Instruksi::Konst(k) => Some(k.tipe()),
-            Instruksi::Biner { tipe, op, .. } => {
-                match op {
-                    OpBiner::SamaDengan
-                    | OpBiner::TidakSama
-                    | OpBiner::KurangDari
-                    | OpBiner::KurangSama
-                    | OpBiner::LebihDari
-                    | OpBiner::LebihSama => Some(IrTipe::I1),
-                    _ => Some(tipe.clone()),
-                }
-            }
-            Instruksi::Unari { tipe, op, .. } => {
-                match op {
-                    OpUnari::Bukan => Some(IrTipe::I1),
-                    _ => Some(tipe.clone()),
-                }
-            }
+            Instruksi::Biner { tipe, op, .. } => match op {
+                OpBiner::SamaDengan
+                | OpBiner::TidakSama
+                | OpBiner::KurangDari
+                | OpBiner::KurangSama
+                | OpBiner::LebihDari
+                | OpBiner::LebihSama => Some(IrTipe::I1),
+                _ => Some(tipe.clone()),
+            },
+            Instruksi::Unari { tipe, op, .. } => match op {
+                OpUnari::Bukan => Some(IrTipe::I1),
+                _ => Some(tipe.clone()),
+            },
             Instruksi::Alloca(_) => Some(IrTipe::Ptr),
             Instruksi::Muat { tipe, .. } => Some(tipe.clone()),
             Instruksi::Simpan { .. } => None,
@@ -211,7 +192,11 @@ impl Terminator {
     pub fn ambil_penerus(&self) -> Vec<IdBlok> {
         match self {
             Terminator::Lompat(target) => vec![*target],
-            Terminator::Cabang { jika_benar, jika_salah, .. } => vec![*jika_benar, *jika_salah],
+            Terminator::Cabang {
+                jika_benar,
+                jika_salah,
+                ..
+            } => vec![*jika_benar, *jika_salah],
             Terminator::Kembali(_) | Terminator::TidakBisa(_) => Vec::new(),
         }
     }

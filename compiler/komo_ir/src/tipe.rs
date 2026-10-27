@@ -3,15 +3,15 @@
 //! Representasi tipe data konkret untuk Komo Intermediate Representation (KIR).
 //! Pada tingkat IR, semua tipe bersifat konkret dan terukur ukurannya.
 
-use std::fmt;
 use komo_sema::SemTipe;
+use std::fmt;
 
 /// Tipe data konkret pada KIR.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum IrTipe {
     /// Tipe boolean 1-bit (`bool`).
     I1,
-    /// Integer 8-bit bertanda / byte (`bita`).
+    /// Integer 8-bit bertanda / byte (`byte`).
     I8,
     /// Integer 16-bit bertanda.
     I16,
@@ -19,7 +19,7 @@ pub enum IrTipe {
     I32,
     /// Integer 64-bit bertanda (`bulat`).
     I64,
-    /// Karakter UTF-32 (32-bit integer).
+    /// Karakter UTF-32 (32-bit integer / `rune`).
     Char,
     /// Bilangan pecahan presisi tunggal 32-bit.
     F32,
@@ -58,35 +58,41 @@ impl IrTipe {
     /// Mengonversi tipe semantik (`SemTipe`) ke tipe konkret IR (`IrTipe`).
     pub fn dari_sem_tipe(sem: &SemTipe) -> Self {
         match sem {
-            SemTipe::Bulat => IrTipe::I64,
-            SemTipe::Desimal => IrTipe::F64,
-            SemTipe::Teks => IrTipe::Ptr, // Penunjuk ke struct representasi teks (ptr data, panjang)
+            SemTipe::Bulat | SemTipe::Bulat64 | SemTipe::TBulat | SemTipe::TBulat64 => IrTipe::I64,
+            SemTipe::Bulat32 | SemTipe::TBulat32 => IrTipe::I32,
+            SemTipe::Bulat16 | SemTipe::TBulat16 => IrTipe::I16,
+            SemTipe::Bulat8 | SemTipe::TBulat8 | SemTipe::Byte => IrTipe::I8,
+            SemTipe::Desimal | SemTipe::Desimal64 => IrTipe::F64,
+            SemTipe::Desimal32 => IrTipe::F32,
+            SemTipe::Teks => IrTipe::Ptr,
             SemTipe::Bool => IrTipe::I1,
-            SemTipe::Karakter => IrTipe::Char,
-            SemTipe::Bita => IrTipe::I8,
+            SemTipe::Rune => IrTipe::Char,
             SemTipe::Kosong => IrTipe::Void,
             SemTipe::Pinjam { .. } => IrTipe::Ptr,
-            SemTipe::Larik { elemen } => {
+            SemTipe::Larik(elemen) => {
+                let _ = elemen;
                 // Representasi slice/larik dinamis: penunjuk data, panjang, kapasitas
                 IrTipe::Struktur(vec![IrTipe::Ptr, IrTipe::I64, IrTipe::I64])
             }
             SemTipe::Peta { .. } => IrTipe::Ptr,
-            SemTipe::Saluran { .. } => IrTipe::Ptr,
-            SemTipe::Mungkin { dalam } => {
+            SemTipe::Saluran(_) => IrTipe::Ptr,
+            SemTipe::Mungkin(dalam) => {
                 // Tag diskriminan (i8) + payload
                 let dalam_ir = Self::dari_sem_tipe(dalam);
                 IrTipe::Struktur(vec![IrTipe::I8, dalam_ir])
             }
-            SemTipe::Hasil { ok, err } => {
-                let ok_ir = Self::dari_sem_tipe(ok);
-                let err_ir = Self::dari_sem_tipe(err);
-                // Ukuran payload maksimum
+            SemTipe::Hasil { sukses, gagal } => {
+                let ok_ir = Self::dari_sem_tipe(sukses);
+                let err_ir = Self::dari_sem_tipe(gagal);
                 let maks_ukuran = ok_ir.ukuran_bita().max(err_ir.ukuran_bita());
-                IrTipe::Struktur(vec![IrTipe::I8, IrTipe::Larik(Box::new(IrTipe::I8), maks_ukuran)])
+                IrTipe::Struktur(vec![
+                    IrTipe::I8,
+                    IrTipe::Larik(Box::new(IrTipe::I8), maks_ukuran),
+                ])
             }
             SemTipe::Struktur { bidang, .. } => {
                 let mut bidang_ir = Vec::new();
-                for (_, t) in bidang {
+                for (_, t, _) in bidang {
                     bidang_ir.push(Self::dari_sem_tipe(t));
                 }
                 IrTipe::Struktur(bidang_ir)
@@ -94,22 +100,28 @@ impl IrTipe {
             SemTipe::Enum { varian, .. } => {
                 let mut maks_payload = 0;
                 for (_, tipe_isi) in varian {
-                    let uk: usize = tipe_isi.iter().map(|t| Self::dari_sem_tipe(t).ukuran_bita()).sum();
+                    let uk: usize = tipe_isi
+                        .iter()
+                        .map(|t| Self::dari_sem_tipe(t).ukuran_bita())
+                        .sum();
                     if uk > maks_payload {
                         maks_payload = uk;
                     }
                 }
-                IrTipe::Struktur(vec![IrTipe::I32, IrTipe::Larik(Box::new(IrTipe::I8), maks_payload)])
+                IrTipe::Struktur(vec![
+                    IrTipe::I32,
+                    IrTipe::Larik(Box::new(IrTipe::I8), maks_payload),
+                ])
             }
-            SemTipe::Antarmuka { .. } => {
-                // Fat pointer: objek ptr + vtable ptr
-                IrTipe::Struktur(vec![IrTipe::Ptr, IrTipe::Ptr])
-            }
-            SemTipe::Fungsi { parameter, kembalian } => IrTipe::Fungsi {
+            SemTipe::Antarmuka { .. } => IrTipe::Struktur(vec![IrTipe::Ptr, IrTipe::Ptr]),
+            SemTipe::Fungsi {
+                parameter,
+                kembalian,
+            } => IrTipe::Fungsi {
                 parameter: parameter.iter().map(Self::dari_sem_tipe).collect(),
                 kembali: Box::new(Self::dari_sem_tipe(kembalian)),
             },
-            SemTipe::Generik { .. } | SemTipe::Galat => IrTipe::I64, // Nilai baku cadangan
+            SemTipe::Generik { .. } | SemTipe::Galat => IrTipe::I64,
         }
     }
 }

@@ -8,6 +8,7 @@ version = "0.1.0"
 dependencies = [
  "komo_ast",
  "komo_diag",
+ "komo_ir",
  "komo_lexer",
  "komo_parser",
  "komo_runtime",
@@ -69,6 +70,7 @@ version = "0.1.0"
 dependencies = [
  "komo_ast",
  "komo_diag",
+ "komo_ir",
  "komo_lexer",
  "komo_parser",
  "komo_runtime",

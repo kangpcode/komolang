@@ -4,12 +4,11 @@
 //! Menghasilkan representasi SSA dengan blok dasar, alloca untuk variabel lokal,
 //! dan kontrol aliran eksplisit yang siap dioptimalkan oleh pass mem2reg.
 
-use std::collections::HashMap;
 use komo_ast::*;
-use komo_sema::{HasilSemantik, SemTipe};
+use komo_sema::HasilSemantik;
+use std::collections::HashMap;
 
-use crate::blok::BlokDasar;
-use crate::fungsi::{FungsiIr, ParameterIr};
+use crate::fungsi::FungsiIr;
 use crate::instruksi::{Instruksi, OpBiner, OpUnari, Terminator};
 use crate::modul::{DataGlobal, ModulIr};
 use crate::nilai::{IdBlok, IdNilai, Konstanta};
@@ -22,30 +21,30 @@ pub fn turunkan_ke_kir(berkas: &BerkasProgram, sema: &HasilSemantik) -> ModulIr 
 
     // 1. Turunkan deklarasi konstanta dan variabel tingkat atas (global)
     for dek in &berkas.deklarasi {
-        match &dek.jenis {
-            JenisDeklarasi::Konstanta { nama, nilai, .. } => {
-                let init = evaluasi_konstanta_literal(nilai);
-                let tipe_ir = if let Some(k) = &init {
-                    k.tipe()
+        match dek {
+            Deklarasi::Konstanta(k) => {
+                let init = evaluasi_konstanta_literal(&k.nilai);
+                let tipe_ir = if let Some(c) = &init {
+                    c.tipe()
                 } else {
                     IrTipe::I64
                 };
                 modul.tambah_global(DataGlobal {
-                    nama: nama.nama.clone(),
+                    nama: k.nama.nama.clone(),
                     tipe: tipe_ir,
                     inisialisasi: init,
                     konstan: true,
                 });
             }
-            JenisDeklarasi::Variabel { nama, nilai, .. } => {
-                let init = nilai.as_ref().and_then(evaluasi_konstanta_literal);
-                let tipe_ir = if let Some(k) = &init {
-                    k.tipe()
+            Deklarasi::Variabel(v) => {
+                let init = evaluasi_konstanta_literal(&v.nilai);
+                let tipe_ir = if let Some(c) = &init {
+                    c.tipe()
                 } else {
                     IrTipe::I64
                 };
                 modul.tambah_global(DataGlobal {
-                    nama: nama.nama.clone(),
+                    nama: v.nama.nama.clone(),
                     tipe: tipe_ir,
                     inisialisasi: init,
                     konstan: false,
@@ -57,7 +56,7 @@ pub fn turunkan_ke_kir(berkas: &BerkasProgram, sema: &HasilSemantik) -> ModulIr 
 
     // 2. Turunkan fungsi dan metode
     for dek in &berkas.deklarasi {
-        if let JenisDeklarasi::Fungsi(f) = &dek.jenis {
+        if let Deklarasi::Fungsi(f) = dek {
             let fungsi_ir = turunkan_fungsi(f, sema);
             modul.tambah_fungsi(fungsi_ir);
         }
@@ -68,15 +67,21 @@ pub fn turunkan_ke_kir(berkas: &BerkasProgram, sema: &HasilSemantik) -> ModulIr 
 
 fn evaluasi_konstanta_literal(expr: &Ekspresi) -> Option<Konstanta> {
     match &expr.jenis {
-        JenisEkspresi::Literal(l) => match l {
-            Literal::Bulat(n) => Some(Konstanta::Bulat(*n)),
-            Literal::Desimal(d) => Some(Konstanta::Desimal(*d)),
-            Literal::Teks(s) => Some(Konstanta::Teks(s.clone())),
-            Literal::Karakter(c) => Some(Konstanta::Karakter(*c)),
-            Literal::Bool(b) => Some(Konstanta::Bool(*b)),
-            Literal::Bita(b) => Some(Konstanta::Bita(*b)),
-            Literal::Kosong => Some(Konstanta::Kosong),
-        },
+        JenisEkspresi::Bulat(n) => Some(Konstanta::Bulat(*n as i64)),
+        JenisEkspresi::Desimal(d) => Some(Konstanta::Desimal(*d)),
+        JenisEkspresi::Bool(b) => Some(Konstanta::Bool(*b)),
+        JenisEkspresi::Rune(c) => Some(Konstanta::Karakter(*c)),
+        JenisEkspresi::Kosong => Some(Konstanta::Kosong),
+        JenisEkspresi::Teks(parts) => {
+            if parts.len() == 1 {
+                if let BagianTeks::Teks(s) = &parts[0] {
+                    return Some(Konstanta::Teks(s.clone()));
+                }
+            } else if parts.is_empty() {
+                return Some(Konstanta::Teks(String::new()));
+            }
+            None
+        }
         _ => None,
     }
 }
@@ -91,7 +96,6 @@ struct KonteksFungsi<'a> {
 }
 
 fn turunkan_fungsi(f: &DeklarasiFungsi, sema: &HasilSemantik) -> FungsiIr {
-    // Tentukan nama fungsi IR
     let nama_ir = if let Some(penerima) = &f.penerima {
         let nama_penerima = tipe_ast_ke_nama(&penerima.tipe);
         format!("{}.{}", nama_penerima, f.nama.nama)
@@ -100,7 +104,7 @@ fn turunkan_fungsi(f: &DeklarasiFungsi, sema: &HasilSemantik) -> FungsiIr {
     };
 
     let tipe_kembali = f
-        .tipe_kembali
+        .tipe_kembalian
         .as_ref()
         .map(|t| tipe_ast_ke_ir(t, sema))
         .unwrap_or(IrTipe::Void);
@@ -116,31 +120,35 @@ fn turunkan_fungsi(f: &DeklarasiFungsi, sema: &HasilSemantik) -> FungsiIr {
     // Alokasikan parameter
     if let Some(penerima) = &f.penerima {
         let tipe_ir = tipe_ast_ke_ir(&penerima.tipe, sema);
-        let param_val = ctx.fungsi.tambah_parameter(penerima.nama.nama.clone(), tipe_ir.clone());
+        let param_val = ctx
+            .fungsi
+            .tambah_parameter(penerima.nama.nama.clone(), tipe_ir.clone());
         let alloca_ptr = ctx.alokasikan_instruksi(Instruksi::Alloca(tipe_ir.clone()));
         ctx.tambah_instruksi(Instruksi::Simpan {
             nilai: param_val,
             penunjuk: alloca_ptr,
         });
-        ctx.variabel_lokal.insert(penerima.nama.nama.clone(), (alloca_ptr, tipe_ir));
+        ctx.variabel_lokal
+            .insert(penerima.nama.nama.clone(), (alloca_ptr, tipe_ir));
     }
 
     for p in &f.parameter {
         let tipe_ir = tipe_ast_ke_ir(&p.tipe, sema);
-        let param_val = ctx.fungsi.tambah_parameter(p.nama.nama.clone(), tipe_ir.clone());
+        let param_val = ctx
+            .fungsi
+            .tambah_parameter(p.nama.nama.clone(), tipe_ir.clone());
         let alloca_ptr = ctx.alokasikan_instruksi(Instruksi::Alloca(tipe_ir.clone()));
         ctx.tambah_instruksi(Instruksi::Simpan {
             nilai: param_val,
             penunjuk: alloca_ptr,
         });
-        ctx.variabel_lokal.insert(p.nama.nama.clone(), (alloca_ptr, tipe_ir));
+        ctx.variabel_lokal
+            .insert(p.nama.nama.clone(), (alloca_ptr, tipe_ir));
     }
 
-    // Turunkan isi blok badan fungsi jika ada
-    if let Some(badan) = &f.badan {
-        for stmt in &badan.pernyataan {
-            ctx.turunkan_pernyataan(stmt);
-        }
+    // Turunkan isi blok badan fungsi
+    for stmt in &f.badan.pernyataan {
+        ctx.turunkan_pernyataan(stmt);
     }
 
     // Pastikan blok aktif ditutup terminator jika belum
@@ -150,7 +158,6 @@ fn turunkan_fungsi(f: &DeklarasiFungsi, sema: &HasilSemantik) -> FungsiIr {
         let term = if tipe_kembali == IrTipe::Void {
             Terminator::Kembali(None)
         } else {
-            // Nilai kembalian default/zero jika jalur jatuh sampai akhir tanpa return
             let zero_val = ctx.alokasikan_instruksi(Instruksi::Konst(Konstanta::Bulat(0)));
             Terminator::Kembali(Some(zero_val))
         };
@@ -186,65 +193,70 @@ impl<'a> KonteksFungsi<'a> {
     }
 
     fn turunkan_pernyataan(&mut self, stmt: &Pernyataan) {
-        // Jika blok saat ini sudah ditutup terminator (misalnya setelah 'kembali'),
-        // abaikan instruksi yang tidak terjangkau (dead code)
-        if self.fungsi.cari_blok(self.blok_aktif).unwrap().apakah_ditutup() {
+        if self
+            .fungsi
+            .cari_blok(self.blok_aktif)
+            .unwrap()
+            .apakah_ditutup()
+        {
             return;
         }
 
         match &stmt.jenis {
-            JenisPernyataan::Variabel { nama, nilai, tipe, .. } => {
+            JenisPernyataan::Variabel {
+                nama, tipe, nilai, ..
+            } => {
                 let tipe_ir = if let Some(t) = tipe {
                     tipe_ast_ke_ir(t, self.sema)
-                } else if let Some(n) = nilai {
-                    self.ambil_tipe_ekspresi(n)
                 } else {
-                    IrTipe::I64
+                    self.ambil_tipe_ekspresi(nilai)
                 };
 
                 let alloca_ptr = self.alokasikan_instruksi(Instruksi::Alloca(tipe_ir.clone()));
-                if let Some(n) = nilai {
-                    let val = self.turunkan_ekspresi(n);
-                    self.tambah_instruksi(Instruksi::Simpan {
-                        nilai: val,
-                        penunjuk: alloca_ptr,
-                    });
-                }
-                self.variabel_lokal.insert(nama.nama.clone(), (alloca_ptr, tipe_ir));
-            }
-
-            JenisPernyataan::Tugas { target, nilai } => {
                 let val = self.turunkan_ekspresi(nilai);
-                let ptr = self.ambil_alamat_lvalue(target);
                 self.tambah_instruksi(Instruksi::Simpan {
                     nilai: val,
-                    penunjuk: ptr,
+                    penunjuk: alloca_ptr,
                 });
+                self.variabel_lokal
+                    .insert(nama.nama.clone(), (alloca_ptr, tipe_ir));
             }
 
-            JenisPernyataan::TugasGabungan { target, operator, nilai } => {
+            JenisPernyataan::Tugas {
+                target,
+                operator,
+                nilai,
+            } => {
                 let ptr = self.ambil_alamat_lvalue(target);
-                let t_ir = self.ambil_tipe_ekspresi(target);
-                let lama = self.alokasikan_instruksi(Instruksi::Muat {
-                    tipe: t_ir.clone(),
-                    penunjuk: ptr,
-                });
-                let rhs = self.turunkan_ekspresi(nilai);
-                let op = match operator {
-                    OperatorTugas::TambahSama => OpBiner::Tambah,
-                    OperatorTugas::KurangSama => OpBiner::Kurang,
-                    OperatorTugas::KaliSama => OpBiner::Kali,
-                    OperatorTugas::BagiSama => OpBiner::Bagi,
-                    OperatorTugas::SisaSama => OpBiner::Sisa,
+                let val = self.turunkan_ekspresi(nilai);
+
+                let nilai_disimpan = match operator {
+                    OperatorTugas::Tetap => val,
+                    op_gabungan => {
+                        let t_ir = self.ambil_tipe_ekspresi(target);
+                        let lama = self.alokasikan_instruksi(Instruksi::Muat {
+                            tipe: t_ir.clone(),
+                            penunjuk: ptr,
+                        });
+                        let op = match op_gabungan {
+                            OperatorTugas::Tambah => OpBiner::Tambah,
+                            OperatorTugas::Kurang => OpBiner::Kurang,
+                            OperatorTugas::Kali => OpBiner::Kali,
+                            OperatorTugas::Bagi => OpBiner::Bagi,
+                            OperatorTugas::Sisa => OpBiner::Sisa,
+                            OperatorTugas::Tetap => unreachable!(),
+                        };
+                        self.alokasikan_instruksi(Instruksi::Biner {
+                            op,
+                            kiri: lama,
+                            kanan: val,
+                            tipe: t_ir,
+                        })
+                    }
                 };
-                let baru = self.alokasikan_instruksi(Instruksi::Biner {
-                    op,
-                    kiri: lama,
-                    kanan: rhs,
-                    tipe: t_ir,
-                });
+
                 self.tambah_instruksi(Instruksi::Simpan {
-                    nilai: baru,
+                    nilai: nilai_disimpan,
                     penunjuk: ptr,
                 });
             }
@@ -259,23 +271,25 @@ impl<'a> KonteksFungsi<'a> {
                 }
             }
 
-            JenisPernyataan::Jika { kondisi, maka, cabang_lain, lainnya } => {
+            JenisPernyataan::Jika {
+                kondisi,
+                maka,
+                lainnya,
+            } => {
                 let val_kondisi = self.turunkan_ekspresi(kondisi);
 
                 let bb_maka = self.fungsi.buat_blok(Some("jika_maka".to_string()));
-                let bb_berikutnya = self.fungsi.buat_blok(Some("jika_berikutnya".to_string()));
                 let bb_gabung = self.fungsi.buat_blok(Some("jika_gabung".to_string()));
-
-                let bb_salah_target = if cabang_lain.is_empty() && lainnya.is_none() {
-                    bb_gabung
+                let bb_salah = if lainnya.is_some() {
+                    self.fungsi.buat_blok(Some("jika_salah".to_string()))
                 } else {
-                    bb_berikutnya
+                    bb_gabung
                 };
 
                 self.atur_terminator_blok_aktif(Terminator::Cabang {
                     kondisi: val_kondisi,
                     jika_benar: bb_maka,
-                    jika_salah: bb_salah_target,
+                    jika_salah: bb_salah,
                 });
 
                 // Cabang maka
@@ -283,45 +297,25 @@ impl<'a> KonteksFungsi<'a> {
                 for s in &maka.pernyataan {
                     self.turunkan_pernyataan(s);
                 }
-                if !self.fungsi.cari_blok(self.blok_aktif).unwrap().apakah_ditutup() {
+                if !self
+                    .fungsi
+                    .cari_blok(self.blok_aktif)
+                    .unwrap()
+                    .apakah_ditutup()
+                {
                     self.atur_terminator_blok_aktif(Terminator::Lompat(bb_gabung));
                 }
 
-                // Cabang jika_lain dan lainnya
-                if !cabang_lain.is_empty() || lainnya.is_some() {
-                    self.blok_aktif = bb_berikutnya;
-                    let mut sisa_lain = lainnya.as_ref();
-
-                    if !cabang_lain.is_empty() {
-                        for cab in cabang_lain {
-                            let k = self.turunkan_ekspresi(&cab.kondisi);
-                            let bb_cab_maka = self.fungsi.buat_blok(Some("jika_lain_maka".to_string()));
-                            let bb_cab_salah = self.fungsi.buat_blok(Some("jika_lain_salah".to_string()));
-
-                            self.atur_terminator_blok_aktif(Terminator::Cabang {
-                                kondisi: k,
-                                jika_benar: bb_cab_maka,
-                                jika_salah: bb_cab_salah,
-                            });
-
-                            self.blok_aktif = bb_cab_maka;
-                            for s in &cab.badan.pernyataan {
-                                self.turunkan_pernyataan(s);
-                            }
-                            if !self.fungsi.cari_blok(self.blok_aktif).unwrap().apakah_ditutup() {
-                                self.atur_terminator_blok_aktif(Terminator::Lompat(bb_gabung));
-                            }
-
-                            self.blok_aktif = bb_cab_salah;
-                        }
-                    }
-
-                    if let Some(lain) = sisa_lain {
-                        for s in &lain.pernyataan {
-                            self.turunkan_pernyataan(s);
-                        }
-                    }
-                    if !self.fungsi.cari_blok(self.blok_aktif).unwrap().apakah_ditutup() {
+                // Cabang salah / lainnya
+                if let Some(lain) = lainnya {
+                    self.blok_aktif = bb_salah;
+                    self.turunkan_pernyataan(lain);
+                    if !self
+                        .fungsi
+                        .cari_blok(self.blok_aktif)
+                        .unwrap()
+                        .apakah_ditutup()
+                    {
                         self.atur_terminator_blok_aktif(Terminator::Lompat(bb_gabung));
                     }
                 }
@@ -348,27 +342,37 @@ impl<'a> KonteksFungsi<'a> {
                 for s in &badan.pernyataan {
                     self.turunkan_pernyataan(s);
                 }
-                if !self.fungsi.cari_blok(self.blok_aktif).unwrap().apakah_ditutup() {
+                if !self
+                    .fungsi
+                    .cari_blok(self.blok_aktif)
+                    .unwrap()
+                    .apakah_ditutup()
+                {
                     self.atur_terminator_blok_aktif(Terminator::Lompat(bb_kondisi));
                 }
 
                 self.blok_aktif = bb_keluar;
             }
 
-            JenisPernyataan::Untuk { variabel, sumber, badan } => {
-                // Untuk rentang: dari..sampai
-                if let JenisEkspresi::Rentang { dari, sampai, inklusif } = &sumber.jenis {
-                    let iter_val = dari
-                        .as_ref()
-                        .map(|d| self.turunkan_ekspresi(d))
-                        .unwrap_or_else(|| self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Bulat(0))));
-
+            JenisPernyataan::Untuk {
+                variabel,
+                koleksi,
+                badan,
+            } => {
+                if let JenisEkspresi::Rentang {
+                    awal,
+                    akhir,
+                    inklusif,
+                } = &koleksi.jenis
+                {
+                    let iter_val = self.turunkan_ekspresi(awal);
                     let iter_ptr = self.alokasikan_instruksi(Instruksi::Alloca(IrTipe::I64));
                     self.tambah_instruksi(Instruksi::Simpan {
                         nilai: iter_val,
                         penunjuk: iter_ptr,
                     });
-                    self.variabel_lokal.insert(variabel.nama.clone(), (iter_ptr, IrTipe::I64));
+                    self.variabel_lokal
+                        .insert(variabel.nama.clone(), (iter_ptr, IrTipe::I64));
 
                     let bb_kondisi = self.fungsi.buat_blok(Some("untuk_kondisi".to_string()));
                     let bb_badan = self.fungsi.buat_blok(Some("untuk_badan".to_string()));
@@ -377,15 +381,11 @@ impl<'a> KonteksFungsi<'a> {
                     self.atur_terminator_blok_aktif(Terminator::Lompat(bb_kondisi));
 
                     self.blok_aktif = bb_kondisi;
-                    let current_iter = self.alokasikan_instruksi(Instruksi::Muat {
+                    let cur_iter = self.alokasikan_instruksi(Instruksi::Muat {
                         tipe: IrTipe::I64,
                         penunjuk: iter_ptr,
                     });
-
-                    let batas_val = sampai
-                        .as_ref()
-                        .map(|s| self.turunkan_ekspresi(s))
-                        .unwrap_or_else(|| self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Bulat(i64::MAX))));
+                    let batas_val = self.turunkan_ekspresi(akhir);
 
                     let op_cmp = if *inklusif {
                         OpBiner::KurangSama
@@ -395,7 +395,7 @@ impl<'a> KonteksFungsi<'a> {
 
                     let cond_val = self.alokasikan_instruksi(Instruksi::Biner {
                         op: op_cmp,
-                        kiri: current_iter,
+                        kiri: cur_iter,
                         kanan: batas_val,
                         tipe: IrTipe::I64,
                     });
@@ -411,8 +411,12 @@ impl<'a> KonteksFungsi<'a> {
                         self.turunkan_pernyataan(s);
                     }
 
-                    // Increment iter
-                    if !self.fungsi.cari_blok(self.blok_aktif).unwrap().apakah_ditutup() {
+                    if !self
+                        .fungsi
+                        .cari_blok(self.blok_aktif)
+                        .unwrap()
+                        .apakah_ditutup()
+                    {
                         let cur = self.alokasikan_instruksi(Instruksi::Muat {
                             tipe: IrTipe::I64,
                             penunjuk: iter_ptr,
@@ -433,17 +437,25 @@ impl<'a> KonteksFungsi<'a> {
 
                     self.blok_aktif = bb_keluar;
                 } else {
-                    // Iterasi umum pada larik
-                    let arr_val = self.turunkan_ekspresi(sumber);
-                    let bb_badan = self.fungsi.buat_blok(Some("untuk_larik_badan".to_string()));
-                    let bb_keluar = self.fungsi.buat_blok(Some("untuk_larik_keluar".to_string()));
+                    let _ = self.turunkan_ekspresi(koleksi);
+                    let bb_badan = self
+                        .fungsi
+                        .buat_blok(Some("untuk_koleksi_badan".to_string()));
+                    let bb_keluar = self
+                        .fungsi
+                        .buat_blok(Some("untuk_koleksi_keluar".to_string()));
 
                     self.atur_terminator_blok_aktif(Terminator::Lompat(bb_badan));
                     self.blok_aktif = bb_badan;
                     for s in &badan.pernyataan {
                         self.turunkan_pernyataan(s);
                     }
-                    if !self.fungsi.cari_blok(self.blok_aktif).unwrap().apakah_ditutup() {
+                    if !self
+                        .fungsi
+                        .cari_blok(self.blok_aktif)
+                        .unwrap()
+                        .apakah_ditutup()
+                    {
                         self.atur_terminator_blok_aktif(Terminator::Lompat(bb_keluar));
                     }
                     self.blok_aktif = bb_keluar;
@@ -458,13 +470,12 @@ impl<'a> KonteksFungsi<'a> {
                     let bb_badan = self.fungsi.buat_blok(Some(format!("cocok_badan_{}", i)));
                     let bb_berikutnya = self.fungsi.buat_blok(Some(format!("cocok_uji_{}", i + 1)));
 
-                    // Uji pola
                     let cocok_kondisi = match &c.pola.jenis {
                         JenisPola::Wildcard => {
                             self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Bool(true)))
                         }
-                        JenisPola::Literal(lit) => {
-                            let lit_val = self.turunkan_literal(lit);
+                        JenisPola::Literal(lit_expr) => {
+                            let lit_val = self.turunkan_ekspresi(lit_expr);
                             self.alokasikan_instruksi(Instruksi::Biner {
                                 op: OpBiner::SamaDengan,
                                 kiri: target_val,
@@ -473,13 +484,14 @@ impl<'a> KonteksFungsi<'a> {
                             })
                         }
                         JenisPola::Pengenal(id) => {
-                            // Binding identifier: cocokkan dan alokasikan variabel lokal
-                            let alloca_ptr = self.alokasikan_instruksi(Instruksi::Alloca(IrTipe::I64));
+                            let alloca_ptr =
+                                self.alokasikan_instruksi(Instruksi::Alloca(IrTipe::I64));
                             self.tambah_instruksi(Instruksi::Simpan {
                                 nilai: target_val,
                                 penunjuk: alloca_ptr,
                             });
-                            self.variabel_lokal.insert(id.nama.clone(), (alloca_ptr, IrTipe::I64));
+                            self.variabel_lokal
+                                .insert(id.nama.clone(), (alloca_ptr, IrTipe::I64));
                             self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Bool(true)))
                         }
                         _ => self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Bool(true))),
@@ -492,29 +504,39 @@ impl<'a> KonteksFungsi<'a> {
                     });
 
                     self.blok_aktif = bb_badan;
-                    self.turunkan_pernyataan(&c.aksi);
-                    if !self.fungsi.cari_blok(self.blok_aktif).unwrap().apakah_ditutup() {
+                    self.turunkan_pernyataan(&c.badan);
+                    if !self
+                        .fungsi
+                        .cari_blok(self.blok_aktif)
+                        .unwrap()
+                        .apakah_ditutup()
+                    {
                         self.atur_terminator_blok_aktif(Terminator::Lompat(bb_gabung));
                     }
 
                     self.blok_aktif = bb_berikutnya;
                 }
 
-                if !self.fungsi.cari_blok(self.blok_aktif).unwrap().apakah_ditutup() {
+                if !self
+                    .fungsi
+                    .cari_blok(self.blok_aktif)
+                    .unwrap()
+                    .apakah_ditutup()
+                {
                     self.atur_terminator_blok_aktif(Terminator::Lompat(bb_gabung));
                 }
 
                 self.blok_aktif = bb_gabung;
             }
 
-            JenisPernyataan::Pilih { kasus, lainnya } => {
+            JenisPernyataan::Pilih { kasus, lainnya, .. } => {
                 let bb_gabung = self.fungsi.buat_blok(Some("pilih_gabung".to_string()));
                 for (i, k) in kasus.iter().enumerate() {
                     let bb_kasus = self.fungsi.buat_blok(Some(format!("pilih_kasus_{}", i)));
                     let bb_next = self.fungsi.buat_blok(Some(format!("pilih_next_{}", i)));
 
-                    // Simulasikan polling saluran
-                    let dummy_ready = self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Bool(true)));
+                    let dummy_ready =
+                        self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Bool(true)));
                     self.atur_terminator_blok_aktif(Terminator::Cabang {
                         kondisi: dummy_ready,
                         jika_benar: bb_kasus,
@@ -522,10 +544,15 @@ impl<'a> KonteksFungsi<'a> {
                     });
 
                     self.blok_aktif = bb_kasus;
-                    for s in &k.badan.pernyataan {
+                    for s in &k.badan {
                         self.turunkan_pernyataan(s);
                     }
-                    if !self.fungsi.cari_blok(self.blok_aktif).unwrap().apakah_ditutup() {
+                    if !self
+                        .fungsi
+                        .cari_blok(self.blok_aktif)
+                        .unwrap()
+                        .apakah_ditutup()
+                    {
                         self.atur_terminator_blok_aktif(Terminator::Lompat(bb_gabung));
                     }
 
@@ -533,11 +560,16 @@ impl<'a> KonteksFungsi<'a> {
                 }
 
                 if let Some(lain) = lainnya {
-                    for s in &lain.pernyataan {
+                    for s in lain {
                         self.turunkan_pernyataan(s);
                     }
                 }
-                if !self.fungsi.cari_blok(self.blok_aktif).unwrap().apakah_ditutup() {
+                if !self
+                    .fungsi
+                    .cari_blok(self.blok_aktif)
+                    .unwrap()
+                    .apakah_ditutup()
+                {
                     self.atur_terminator_blok_aktif(Terminator::Lompat(bb_gabung));
                 }
 
@@ -556,7 +588,15 @@ impl<'a> KonteksFungsi<'a> {
             }
 
             JenisPernyataan::Tunda(e) => {
-                self.tumpukan_tunda.push(*e.clone());
+                self.tumpukan_tunda.push(e.clone());
+            }
+
+            JenisPernyataan::TundaBlok(b) => {
+                for s in &b.pernyataan {
+                    if let JenisPernyataan::Ekspresi(e) = &s.jenis {
+                        self.tumpukan_tunda.push(e.clone());
+                    }
+                }
             }
 
             JenisPernyataan::Jalankan(e) => {
@@ -573,7 +613,47 @@ impl<'a> KonteksFungsi<'a> {
 
     fn turunkan_ekspresi(&mut self, expr: &Ekspresi) -> IdNilai {
         match &expr.jenis {
-            JenisEkspresi::Literal(l) => self.turunkan_literal(l),
+            JenisEkspresi::Bulat(n) => {
+                self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Bulat(*n as i64)))
+            }
+            JenisEkspresi::Desimal(d) => {
+                self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Desimal(*d)))
+            }
+            JenisEkspresi::Bool(b) => {
+                self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Bool(*b)))
+            }
+            JenisEkspresi::Rune(c) => {
+                self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Karakter(*c)))
+            }
+            JenisEkspresi::Kosong => self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Kosong)),
+
+            JenisEkspresi::Teks(parts) => {
+                if parts.len() == 1 {
+                    if let BagianTeks::Teks(s) = &parts[0] {
+                        return self
+                            .alokasikan_instruksi(Instruksi::Konst(Konstanta::Teks(s.clone())));
+                    }
+                }
+                let mut argumen = Vec::new();
+                for b in parts {
+                    match b {
+                        BagianTeks::Teks(s) => {
+                            let k = self
+                                .alokasikan_instruksi(Instruksi::Konst(Konstanta::Teks(s.clone())));
+                            argumen.push(k);
+                        }
+                        BagianTeks::Ekspresi(e) => {
+                            let v = self.turunkan_ekspresi(e);
+                            argumen.push(v);
+                        }
+                    }
+                }
+                self.alokasikan_instruksi(Instruksi::Panggil {
+                    fungsi: "komo_rt_format_teks".to_string(),
+                    argumen,
+                    tipe_kembali: IrTipe::Ptr,
+                })
+            }
 
             JenisEkspresi::Pengenal(id) => {
                 if let Some((ptr, tipe)) = self.variabel_lokal.get(&id.nama).cloned() {
@@ -582,12 +662,15 @@ impl<'a> KonteksFungsi<'a> {
                         penunjuk: ptr,
                     })
                 } else {
-                    // Mungkin konstanta global atau konstanta literal
                     self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Bulat(0)))
                 }
             }
 
-            JenisEkspresi::Biner { kiri, operator, kanan } => {
+            JenisEkspresi::Biner {
+                kiri,
+                operator,
+                kanan,
+            } => {
                 let lhs = self.turunkan_ekspresi(kiri);
                 let rhs = self.turunkan_ekspresi(kanan);
                 let tipe_ir = self.ambil_tipe_ekspresi(kiri);
@@ -598,17 +681,14 @@ impl<'a> KonteksFungsi<'a> {
                     OperatorBiner::Kali => OpBiner::Kali,
                     OperatorBiner::Bagi => OpBiner::Bagi,
                     OperatorBiner::Sisa => OpBiner::Sisa,
-                    OperatorBiner::SamaDengan => OpBiner::SamaDengan,
+                    OperatorBiner::Sama => OpBiner::SamaDengan,
                     OperatorBiner::TidakSama => OpBiner::TidakSama,
-                    OperatorBiner::KurangDari => OpBiner::KurangDari,
-                    OperatorBiner::KurangSama => OpBiner::KurangSama,
-                    OperatorBiner::LebihDari => OpBiner::LebihDari,
-                    OperatorBiner::LebihSama => OpBiner::LebihSama,
-                    OperatorBiner::DanLogika | OperatorBiner::DanBit => OpBiner::DanBit,
-                    OperatorBiner::AtauLogika | OperatorBiner::AtauBit => OpBiner::AtauBit,
-                    OperatorBiner::XorBit => OpBiner::XorBit,
-                    OperatorBiner::GeserKiri => OpBiner::GeserKiri,
-                    OperatorBiner::GeserKanan => OpBiner::GeserKanan,
+                    OperatorBiner::LebihKecil => OpBiner::KurangDari,
+                    OperatorBiner::LebihKecilSama => OpBiner::KurangSama,
+                    OperatorBiner::LebihBesar => OpBiner::LebihDari,
+                    OperatorBiner::LebihBesarSama => OpBiner::LebihSama,
+                    OperatorBiner::Dan => OpBiner::DanBit,
+                    OperatorBiner::Atau => OpBiner::AtauBit,
                 };
 
                 self.alokasikan_instruksi(Instruksi::Biner {
@@ -622,28 +702,35 @@ impl<'a> KonteksFungsi<'a> {
             JenisEkspresi::Unari { operator, operan } => {
                 let val = self.turunkan_ekspresi(operan);
                 let tipe_ir = self.ambil_tipe_ekspresi(operan);
-                let op = match operator {
-                    OperatorUnari::Negasi => OpUnari::Negasi,
-                    OperatorUnari::Bukan => OpUnari::Bukan,
-                    OperatorUnari::BukanBit => OpUnari::BukanBit,
-                };
-                self.alokasikan_instruksi(Instruksi::Unari {
-                    op,
-                    operan: val,
-                    tipe: tipe_ir,
-                })
+                match operator {
+                    OperatorUnari::Negatif => self.alokasikan_instruksi(Instruksi::Unari {
+                        op: OpUnari::Negasi,
+                        operan: val,
+                        tipe: tipe_ir,
+                    }),
+                    OperatorUnari::Bukan => self.alokasikan_instruksi(Instruksi::Unari {
+                        op: OpUnari::Bukan,
+                        operan: val,
+                        tipe: tipe_ir,
+                    }),
+                    OperatorUnari::Pinjam | OperatorUnari::PinjamMutabel => {
+                        self.ambil_alamat_lvalue(operan)
+                    }
+                    OperatorUnari::Pindah => val,
+                }
             }
 
-            JenisEkspresi::Panggilan { fungsi, argumen } => {
+            JenisEkspresi::Panggil {
+                fungsi, argumen, ..
+            } => {
                 let mut nilai_arg = Vec::new();
                 let nama_fungsi = match &fungsi.jenis {
                     JenisEkspresi::Pengenal(id) => id.nama.clone(),
-                    JenisEkspresi::AksesBidang { objek, bidang } => {
-                        // Pemanggilan metode obj.metode()
+                    JenisEkspresi::Bidang { objek, nama } => {
                         let obj_ptr = self.turunkan_ekspresi(objek);
                         nilai_arg.push(obj_ptr);
                         let tipe_obj = self.ambil_tipe_ekspresi(objek);
-                        format!("{}.{}", tipe_obj, bidang.nama)
+                        format!("{}.{}", tipe_obj, nama.nama)
                     }
                     _ => "panggilan_tak_dikenal".to_string(),
                 };
@@ -660,12 +747,12 @@ impl<'a> KonteksFungsi<'a> {
                 })
             }
 
-            JenisEkspresi::AksesBidang { objek, bidang } => {
+            JenisEkspresi::Bidang { objek, .. } => {
                 let obj_ptr = self.turunkan_ekspresi(objek);
                 let tipe_hasil = self.ambil_tipe_ekspresi(expr);
                 let field_ptr = self.alokasikan_instruksi(Instruksi::AksesBidang {
                     struktur: obj_ptr,
-                    indeks: 0, // Dihitung dari layout bidang di pass semantik
+                    indeks: 0,
                 });
                 self.alokasikan_instruksi(Instruksi::Muat {
                     tipe: tipe_hasil,
@@ -699,7 +786,8 @@ impl<'a> KonteksFungsi<'a> {
                 )));
                 for (i, e) in elemen.iter().enumerate() {
                     let v = self.turunkan_ekspresi(e);
-                    let idx_val = self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Bulat(i as i64)));
+                    let idx_val =
+                        self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Bulat(i as i64)));
                     let elem_ptr = self.alokasikan_instruksi(Instruksi::AksesIndeks {
                         target: larik_ptr,
                         indeks: idx_val,
@@ -712,11 +800,11 @@ impl<'a> KonteksFungsi<'a> {
                 larik_ptr
             }
 
-            JenisEkspresi::InisialisasiStruktur { bidang, .. } => {
+            JenisEkspresi::Struktur { bidang, .. } => {
                 let struct_tipe = self.ambil_tipe_ekspresi(expr);
                 let struct_ptr = self.alokasikan_instruksi(Instruksi::Alloca(struct_tipe));
-                for (i, (_, nilai_bidang)) in bidang.iter().enumerate() {
-                    let v = self.turunkan_ekspresi(nilai_bidang);
+                for (i, b) in bidang.iter().enumerate() {
+                    let v = self.turunkan_ekspresi(&b.nilai);
                     let field_ptr = self.alokasikan_instruksi(Instruksi::AksesBidang {
                         struktur: struct_ptr,
                         indeks: i,
@@ -729,61 +817,33 @@ impl<'a> KonteksFungsi<'a> {
                 struct_ptr
             }
 
-            JenisEkspresi::InterpolasiTeks(bagian) => {
-                // String formatting desugared to runtime build
-                let mut argumen = Vec::new();
-                for b in bagian {
-                    match b {
-                        BagianInterpolasi::Teks(s) => {
-                            let k = self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Teks(s.clone())));
-                            argumen.push(k);
-                        }
-                        BagianInterpolasi::Ekspresi(e) => {
-                            let v = self.turunkan_ekspresi(e);
-                            argumen.push(v);
-                        }
-                    }
-                }
-                self.alokasikan_instruksi(Instruksi::Panggil {
-                    fungsi: "komo_rt_format_teks".to_string(),
-                    argumen,
-                    tipe_kembali: IrTipe::Ptr,
-                })
-            }
-
-            JenisEkspresi::Pindah(e) => self.turunkan_ekspresi(e),
-
-            JenisEkspresi::Pinjam { ekspresi, .. } => {
-                self.ambil_alamat_lvalue(ekspresi)
-            }
-
-            JenisEkspresi::Rentang { dari, sampai, .. } => {
-                let start = dari.as_ref().map(|d| self.turunkan_ekspresi(d))
-                    .unwrap_or_else(|| self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Bulat(0))));
-                let end = sampai.as_ref().map(|s| self.turunkan_ekspresi(s))
-                    .unwrap_or_else(|| self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Bulat(0))));
-                // Rentang sebagai struct { i64, i64 }
-                let range_ptr = self.alokasikan_instruksi(Instruksi::Alloca(IrTipe::Struktur(vec![IrTipe::I64, IrTipe::I64])));
-                let f0 = self.alokasikan_instruksi(Instruksi::AksesBidang { struktur: range_ptr, indeks: 0 });
-                self.tambah_instruksi(Instruksi::Simpan { nilai: start, penunjuk: f0 });
-                let f1 = self.alokasikan_instruksi(Instruksi::AksesBidang { struktur: range_ptr, indeks: 1 });
-                self.tambah_instruksi(Instruksi::Simpan { nilai: end, penunjuk: f1 });
+            JenisEkspresi::Rentang { awal, akhir, .. } => {
+                let start = self.turunkan_ekspresi(awal);
+                let end = self.turunkan_ekspresi(akhir);
+                let range_ptr =
+                    self.alokasikan_instruksi(Instruksi::Alloca(IrTipe::Struktur(vec![
+                        IrTipe::I64,
+                        IrTipe::I64,
+                    ])));
+                let f0 = self.alokasikan_instruksi(Instruksi::AksesBidang {
+                    struktur: range_ptr,
+                    indeks: 0,
+                });
+                self.tambah_instruksi(Instruksi::Simpan {
+                    nilai: start,
+                    penunjuk: f0,
+                });
+                let f1 = self.alokasikan_instruksi(Instruksi::AksesBidang {
+                    struktur: range_ptr,
+                    indeks: 1,
+                });
+                self.tambah_instruksi(Instruksi::Simpan {
+                    nilai: end,
+                    penunjuk: f1,
+                });
                 range_ptr
             }
         }
-    }
-
-    fn turunkan_literal(&mut self, l: &Literal) -> IdNilai {
-        let konst = match l {
-            Literal::Bulat(n) => Konstanta::Bulat(*n),
-            Literal::Desimal(d) => Konstanta::Desimal(*d),
-            Literal::Teks(s) => Konstanta::Teks(s.clone()),
-            Literal::Karakter(c) => Konstanta::Karakter(*c),
-            Literal::Bool(b) => Konstanta::Bool(*b),
-            Literal::Bita(b) => Konstanta::Bita(*b),
-            Literal::Kosong => Konstanta::Kosong,
-        };
-        self.alokasikan_instruksi(Instruksi::Konst(konst))
     }
 
     fn ambil_alamat_lvalue(&mut self, expr: &Ekspresi) -> IdNilai {
@@ -795,7 +855,7 @@ impl<'a> KonteksFungsi<'a> {
                     self.alokasikan_instruksi(Instruksi::Alloca(IrTipe::I64))
                 }
             }
-            JenisEkspresi::AksesBidang { objek, .. } => {
+            JenisEkspresi::Bidang { objek, .. } => {
                 let obj_ptr = self.turunkan_ekspresi(objek);
                 self.alokasikan_instruksi(Instruksi::AksesBidang {
                     struktur: obj_ptr,
@@ -815,14 +875,14 @@ impl<'a> KonteksFungsi<'a> {
     }
 
     fn ambil_tipe_ekspresi(&self, expr: &Ekspresi) -> IrTipe {
-        if let Some(sem_tipe) = self.sema.tabel_tipe.get(&expr.rentang) {
+        if let Some(sem_tipe) = self.sema.tipe_ekspresi.get(&expr.rentang) {
             IrTipe::dari_sem_tipe(sem_tipe)
         } else {
             match &expr.jenis {
-                JenisEkspresi::Literal(Literal::Bulat(_)) => IrTipe::I64,
-                JenisEkspresi::Literal(Literal::Desimal(_)) => IrTipe::F64,
-                JenisEkspresi::Literal(Literal::Bool(_)) => IrTipe::I1,
-                JenisEkspresi::Literal(Literal::Teks(_)) => IrTipe::Ptr,
+                JenisEkspresi::Bulat(_) => IrTipe::I64,
+                JenisEkspresi::Desimal(_) => IrTipe::F64,
+                JenisEkspresi::Bool(_) => IrTipe::I1,
+                JenisEkspresi::Teks(_) => IrTipe::Ptr,
                 _ => IrTipe::I64,
             }
         }
@@ -831,31 +891,12 @@ impl<'a> KonteksFungsi<'a> {
 
 fn tipe_ast_ke_nama(t: &Tipe) -> String {
     match &t.jenis {
-        JenisTipe::Sederhana(id) => id.nama.clone(),
-        JenisTipe::Generik { nama, .. } => nama.nama.clone(),
+        JenisTipe::Nama { nama, .. } => nama.nama.clone(),
         JenisTipe::Pinjam { dalam, .. } => tipe_ast_ke_nama(dalam),
-        _ => "Objek".to_string(),
     }
 }
 
 fn tipe_ast_ke_ir(t: &Tipe, sema: &HasilSemantik) -> IrTipe {
-    if let Some(sem) = sema.tabel_tipe.get(&t.rentang) {
-        IrTipe::dari_sem_tipe(sem)
-    } else {
-        match &t.jenis {
-            JenisTipe::Sederhana(id) => match id.nama.as_str() {
-                "bulat" => IrTipe::I64,
-                "desimal" => IrTipe::F64,
-                "teks" => IrTipe::Ptr,
-                "bool" => IrTipe::I1,
-                "karakter" => IrTipe::Char,
-                "bita" => IrTipe::I8,
-                "kosong" => IrTipe::Void,
-                _ => IrTipe::Ptr,
-            },
-            JenisTipe::Pinjam { .. } => IrTipe::Ptr,
-            JenisTipe::Larik { .. } => IrTipe::Struktur(vec![IrTipe::Ptr, IrTipe::I64, IrTipe::I64]),
-            _ => IrTipe::I64,
-        }
-    }
+    let sem = komo_sema::tipe_dari_ast(t, &|n| sema.tabel.cari_tipe(n));
+    IrTipe::dari_sem_tipe(&sem)
 }

@@ -171,9 +171,9 @@ fungsi utama() {
 
 ### Tahap 3 — IR & Optimizer
 
-- [ ] Desain **KIR** berbentuk SSA + lowering dari AST.
-- [ ] Optimisasi: constant folding, dead code elimination, inlining, escape analysis, monomorphization, loop optimizations dasar.
-- [ ] Verifier IR dan dump IR yang mudah dibaca.
+- [x] Desain **KIR** berbentuk SSA + lowering dari AST.
+- [x] Optimisasi: constant folding, dead code elimination, inlining, escape analysis, monomorphization, loop optimizations dasar.
+- [x] Verifier IR dan dump IR yang mudah dibaca.
 
 * **Selesai bila:** IR lolos verifier pada seluruh tes dan optimizer terbukti menjaga hasil program.
 
