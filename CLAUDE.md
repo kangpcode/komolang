@@ -179,9 +179,9 @@ fungsi utama() {
 
 ### Tahap 4A — Backend Native (via Cranelift/LLVM)
 
-- [ ] Generate kode mesin untuk x86\_64 dan ARM64.
-- [ ] Linking menjadi executable di Linux, Windows, macOS.
-- [ ] Dukungan debug info (DWARF/PDB) agar bisa di-debug.
+- [x] Generate kode mesin untuk x86\_64 dan ARM64.
+- [x] Linking menjadi executable di Linux, Windows, macOS.
+- [x] Dukungan debug info (DWARF/PDB) agar bisa di-debug.
 
 * **Selesai bila:** program `Halo Dunia`, fibonacci, dan tes contoh berjalan native di 3 OS.
 

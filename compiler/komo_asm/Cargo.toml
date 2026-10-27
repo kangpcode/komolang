@@ -1,0 +1,13 @@
+# Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+[package]
+name = "komo_asm"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+komo_ir = { workspace = true }
+komo_diag = { workspace = true }

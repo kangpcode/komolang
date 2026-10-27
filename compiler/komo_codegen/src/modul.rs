@@ -51,6 +51,7 @@ pub fn kompilasi_ke_objek(
 
     // 2. Deklarasikan seluruh signature fungsi pada modul
     let mut peta_fungsi: HashMap<String, FuncId> = HashMap::new();
+    let mut peta_signature: HashMap<String, cranelift_codegen::ir::Signature> = HashMap::new();
     for f in &modul.fungsi {
         let mut sig = object_module.make_signature();
         for param in &f.parameter {
@@ -62,6 +63,7 @@ pub fn kompilasi_ke_objek(
             sig.returns.push(AbiParam::new(ret_ty));
         }
 
+        peta_signature.insert(f.nama.clone(), sig.clone());
         let linkage = Linkage::Export;
         let func_id = object_module
             .declare_function(&f.nama, linkage, &sig)
@@ -85,14 +87,19 @@ pub fn kompilasi_ke_objek(
                 &mut builder,
                 f,
                 &peta_fungsi,
+                &peta_signature,
                 &mut string_cache,
             )?;
-            builder.finalize();
+            builder.finalize(object_module.target_config());
         }
 
-        object_module
-            .define_function(func_id, &mut ctx)
-            .map_err(|e| format!("Gagal mengompilasi badan fungsi '{}': {}", f.nama, e))?;
+        if let Err(e) = object_module.define_function(func_id, &mut ctx) {
+            let rincian = match cranelift_codegen::verifier::verify_function(&ctx.func, object_module.isa()) {
+                Ok(_) => format!("{}", e),
+                Err(verif) => format!("{}: {}", e, verif),
+            };
+            return Err(format!("Gagal mengompilasi badan fungsi '{}': {}", f.nama, rincian));
+        }
         object_module.clear_context(&mut ctx);
     }
 
@@ -199,7 +206,7 @@ fn buat_wrapper_c_main<M: Module>(
         };
 
         builder.ins().return_(&[ret_val]);
-        builder.finalize();
+        builder.finalize(module.target_config());
     }
 
     module

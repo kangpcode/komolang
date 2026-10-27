@@ -10,6 +10,7 @@ members = [
     "compiler/komo_sema",
     "compiler/komo_ir",
     "compiler/komo_codegen",
+    "compiler/komo_asm",
     "runtime/komo_runtime",
     "tests",
 ]
@@ -23,6 +24,7 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/kangpcode/komolang"
 
 [workspace.dependencies]
+komo_asm = { path = "compiler/komo_asm" }
 komo_ast = { path = "compiler/komo_ast" }
 komo_codegen = { path = "compiler/komo_codegen" }
 komo_diag = { path = "compiler/komo_diag" }
@@ -31,4 +33,5 @@ komo_lexer = { path = "compiler/komo_lexer" }
 komo_parser = { path = "compiler/komo_parser" }
 komo_runtime = { path = "runtime/komo_runtime" }
 komo_sema = { path = "compiler/komo_sema" }
+
 

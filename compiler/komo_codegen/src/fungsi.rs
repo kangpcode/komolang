@@ -8,7 +8,7 @@ use std::collections::HashMap;
 
 use cranelift_codegen::ir::condcodes::{FloatCC, IntCC};
 use cranelift_codegen::ir::{
-    types, AbiParam, Block, InstBuilder, MemFlags, StackSlotData, StackSlotKind, TrapCode,
+    types, AbiParam, Block, BlockArg, InstBuilder, MemFlagsData, StackSlotData, StackSlotKind, TrapCode,
     Type as ClType, Value as ClValue,
 };
 use cranelift_frontend::FunctionBuilder;
@@ -24,6 +24,7 @@ pub fn kompilasi_fungsi<M: Module>(
     builder: &mut FunctionBuilder,
     fungsi_ir: &FungsiIr,
     peta_fungsi: &HashMap<String, FuncId>,
+    peta_signature: &HashMap<String, cranelift_codegen::ir::Signature>,
     string_cache: &mut HashMap<String, ClValue>,
 ) -> Result<(), String> {
     let pointer_type = module.target_config().pointer_type();
@@ -101,7 +102,7 @@ pub fn kompilasi_fungsi<M: Module>(
                                     .define_data(data_id, &data_ctx)
                                     .map_err(|e| format!("Gagal mendefinisikan data teks: {}", e))?;
                                 let local_data = module.declare_data_in_func(data_id, builder.func);
-                                let ptr_val = builder.ins().global_value(pointer_type, local_data);
+                                let ptr_val = builder.ins().symbol_value(pointer_type, local_data);
                                 string_cache.insert(s.clone(), ptr_val);
                                 ptr_val
                             }
@@ -113,12 +114,40 @@ pub fn kompilasi_fungsi<M: Module>(
                 }
 
                 Instruksi::Biner { op, kiri, kanan, tipe } => {
-                    let cl_kiri = peta_nilai.get(kiri).copied().unwrap_or_else(|| {
+                    let is_float = *tipe == IrTipe::F64 || *tipe == IrTipe::F32;
+                    let target_cl_ty = if *tipe == IrTipe::F32 {
+                        types::F32
+                    } else if *tipe == IrTipe::F64 {
+                        types::F64
+                    } else {
+                        types::I64
+                    };
+
+                    let mut cl_kiri = peta_nilai.get(kiri).copied().unwrap_or_else(|| {
                         builder.ins().iconst(types::I64, 0)
                     });
-                    let cl_kanan = peta_nilai.get(kanan).copied().unwrap_or_else(|| {
+                    let mut cl_kanan = peta_nilai.get(kanan).copied().unwrap_or_else(|| {
                         builder.ins().iconst(types::I64, 0)
                     });
+
+                    let ty_kiri = builder.func.dfg.value_type(cl_kiri);
+                    let ty_kanan = builder.func.dfg.value_type(cl_kanan);
+
+                    if is_float {
+                        if ty_kiri.is_int() {
+                            cl_kiri = builder.ins().fcvt_from_sint(target_cl_ty, cl_kiri);
+                        }
+                        if ty_kanan.is_int() {
+                            cl_kanan = builder.ins().fcvt_from_sint(target_cl_ty, cl_kanan);
+                        }
+                    } else if target_cl_ty.is_int() {
+                        if ty_kiri.is_float() {
+                            cl_kiri = builder.ins().fcvt_to_sint_sat(target_cl_ty, cl_kiri);
+                        }
+                        if ty_kanan.is_float() {
+                            cl_kanan = builder.ins().fcvt_to_sint_sat(target_cl_ty, cl_kanan);
+                        }
+                    }
 
                     let val = match op {
                         OpBiner::Tambah => {
@@ -158,56 +187,44 @@ pub fn kompilasi_fungsi<M: Module>(
 
                         OpBiner::SamaDengan => {
                             if *tipe == IrTipe::F64 || *tipe == IrTipe::F32 {
-                                let cmp = builder.ins().fcmp(FloatCC::Equal, cl_kiri, cl_kanan);
-                                builder.ins().uextend(types::I8, cmp)
+                                builder.ins().fcmp(FloatCC::Equal, cl_kiri, cl_kanan)
                             } else {
-                                let cmp = builder.ins().icmp(IntCC::Equal, cl_kiri, cl_kanan);
-                                builder.ins().uextend(types::I8, cmp)
+                                builder.ins().icmp(IntCC::Equal, cl_kiri, cl_kanan)
                             }
                         }
                         OpBiner::TidakSama => {
                             if *tipe == IrTipe::F64 || *tipe == IrTipe::F32 {
-                                let cmp = builder.ins().fcmp(FloatCC::NotEqual, cl_kiri, cl_kanan);
-                                builder.ins().uextend(types::I8, cmp)
+                                builder.ins().fcmp(FloatCC::NotEqual, cl_kiri, cl_kanan)
                             } else {
-                                let cmp = builder.ins().icmp(IntCC::NotEqual, cl_kiri, cl_kanan);
-                                builder.ins().uextend(types::I8, cmp)
+                                builder.ins().icmp(IntCC::NotEqual, cl_kiri, cl_kanan)
                             }
                         }
                         OpBiner::KurangDari => {
                             if *tipe == IrTipe::F64 || *tipe == IrTipe::F32 {
-                                let cmp = builder.ins().fcmp(FloatCC::LessThan, cl_kiri, cl_kanan);
-                                builder.ins().uextend(types::I8, cmp)
+                                builder.ins().fcmp(FloatCC::LessThan, cl_kiri, cl_kanan)
                             } else {
-                                let cmp = builder.ins().icmp(IntCC::SignedLessThan, cl_kiri, cl_kanan);
-                                builder.ins().uextend(types::I8, cmp)
+                                builder.ins().icmp(IntCC::SignedLessThan, cl_kiri, cl_kanan)
                             }
                         }
                         OpBiner::KurangSama => {
                             if *tipe == IrTipe::F64 || *tipe == IrTipe::F32 {
-                                let cmp = builder.ins().fcmp(FloatCC::LessThanOrEqual, cl_kiri, cl_kanan);
-                                builder.ins().uextend(types::I8, cmp)
+                                builder.ins().fcmp(FloatCC::LessThanOrEqual, cl_kiri, cl_kanan)
                             } else {
-                                let cmp = builder.ins().icmp(IntCC::SignedLessThanOrEqual, cl_kiri, cl_kanan);
-                                builder.ins().uextend(types::I8, cmp)
+                                builder.ins().icmp(IntCC::SignedLessThanOrEqual, cl_kiri, cl_kanan)
                             }
                         }
                         OpBiner::LebihDari => {
                             if *tipe == IrTipe::F64 || *tipe == IrTipe::F32 {
-                                let cmp = builder.ins().fcmp(FloatCC::GreaterThan, cl_kiri, cl_kanan);
-                                builder.ins().uextend(types::I8, cmp)
+                                builder.ins().fcmp(FloatCC::GreaterThan, cl_kiri, cl_kanan)
                             } else {
-                                let cmp = builder.ins().icmp(IntCC::SignedGreaterThan, cl_kiri, cl_kanan);
-                                builder.ins().uextend(types::I8, cmp)
+                                builder.ins().icmp(IntCC::SignedGreaterThan, cl_kiri, cl_kanan)
                             }
                         }
                         OpBiner::LebihSama => {
                             if *tipe == IrTipe::F64 || *tipe == IrTipe::F32 {
-                                let cmp = builder.ins().fcmp(FloatCC::GreaterThanOrEqual, cl_kiri, cl_kanan);
-                                builder.ins().uextend(types::I8, cmp)
+                                builder.ins().fcmp(FloatCC::GreaterThanOrEqual, cl_kiri, cl_kanan)
                             } else {
-                                let cmp = builder.ins().icmp(IntCC::SignedGreaterThanOrEqual, cl_kiri, cl_kanan);
-                                builder.ins().uextend(types::I8, cmp)
+                                builder.ins().icmp(IntCC::SignedGreaterThanOrEqual, cl_kiri, cl_kanan)
                             }
                         }
                     };
@@ -257,7 +274,7 @@ pub fn kompilasi_fungsi<M: Module>(
                         builder.ins().iconst(pointer_type, 0)
                     });
                     let cl_ty = konversi_tipe_ke_cranelift(tipe, pointer_type).unwrap_or(pointer_type);
-                    let val = builder.ins().load(cl_ty, MemFlags::trusted(), cl_ptr, 0);
+                    let val = builder.ins().load(cl_ty, MemFlagsData::trusted(), cl_ptr, 0);
                     if let Some(res) = hasil {
                         peta_nilai.insert(*res, val);
                     }
@@ -270,7 +287,7 @@ pub fn kompilasi_fungsi<M: Module>(
                     let cl_ptr = peta_nilai.get(penunjuk).copied().unwrap_or_else(|| {
                         builder.ins().iconst(pointer_type, 0)
                     });
-                    builder.ins().store(MemFlags::trusted(), cl_val, cl_ptr, 0);
+                    builder.ins().store(MemFlagsData::trusted(), cl_val, cl_ptr, 0);
                 }
 
                 Instruksi::AksesBidang { struktur, indeks } => {
@@ -278,7 +295,7 @@ pub fn kompilasi_fungsi<M: Module>(
                         builder.ins().iconst(pointer_type, 0)
                     });
                     let offset = (*indeks * 8) as i64;
-                    let field_ptr = builder.ins().iadd_imm(cl_struk, offset);
+                    let field_ptr = builder.ins().iadd_imm_s(cl_struk, offset);
                     if let Some(res) = hasil {
                         peta_nilai.insert(*res, field_ptr);
                     }
@@ -324,6 +341,16 @@ pub fn kompilasi_fungsi<M: Module>(
                         cl_args.push(arg_val);
                     }
 
+                    if fungsi == "komo_rt_format_teks" {
+                        let first = cl_args.first().copied().unwrap_or_else(|| {
+                            builder.ins().iconst(pointer_type, 0)
+                        });
+                        if let Some(res) = hasil {
+                            peta_nilai.insert(*res, first);
+                        }
+                        continue;
+                    }
+
                     let call_res = panggil_fungsi(
                         module,
                         builder,
@@ -332,6 +359,7 @@ pub fn kompilasi_fungsi<M: Module>(
                         tipe_kembali,
                         pointer_type,
                         peta_fungsi,
+                        peta_signature,
                     )?;
 
                     if let Some(res) = hasil {
@@ -398,7 +426,7 @@ fn kumpulkan_phi_args(
     asal_blok: IdBlok,
     blok_phi_nodes: &HashMap<IdBlok, Vec<(IdNilai, Vec<(IdNilai, IdBlok)>)>>,
     peta_nilai: &HashMap<IdNilai, ClValue>,
-) -> Vec<ClValue> {
+) -> Vec<BlockArg> {
     let mut args = Vec::new();
     if let Some(phis) = blok_phi_nodes.get(&target_blok) {
         for (_, masukan) in phis {
@@ -410,7 +438,7 @@ fn kumpulkan_phi_args(
                 }
             }
             if let Some(v) = val_opt {
-                args.push(v);
+                args.push(BlockArg::from(v));
             }
         }
     }
@@ -452,6 +480,7 @@ fn panggil_fungsi<M: Module>(
     tipe_kembali: &IrTipe,
     pointer_type: ClType,
     peta_fungsi: &HashMap<String, FuncId>,
+    peta_signature: &HashMap<String, cranelift_codegen::ir::Signature>,
 ) -> Result<Option<ClValue>, String> {
     // Normalisasi nama fungsi jika berasal dari modul std seperti `cetak.baris`
     let nama_target = match nama_fungsi {
@@ -462,12 +491,29 @@ fn panggil_fungsi<M: Module>(
         lain => lain,
     };
 
+    // Sesuaikan tipe argumen sesuai signature target jika sudah diketahui
+    let mut cl_args = argumen.to_vec();
+    if let Some(target_sig) = peta_signature
+        .get(nama_target)
+        .or_else(|| peta_signature.get(nama_fungsi))
+    {
+        for (i, arg) in cl_args.iter_mut().enumerate() {
+            if i < target_sig.params.len() {
+                let expected_ty = target_sig.params[i].value_type;
+                let actual_ty = builder.func.dfg.value_type(*arg);
+                if expected_ty != actual_ty {
+                    *arg = lakukan_cast(builder, *arg, expected_ty);
+                }
+            }
+        }
+    }
+
     let func_id = if let Some(id) = peta_fungsi.get(nama_target).or_else(|| peta_fungsi.get(nama_fungsi)) {
         *id
     } else {
         // Deklarasikan sebagai fungsi eksternal runtime jika belum terdefinisi
         let mut sig = module.make_signature();
-        for arg in argumen {
+        for arg in &cl_args {
             let ty = builder.func.dfg.value_type(*arg);
             sig.params.push(AbiParam::new(ty));
         }
@@ -480,7 +526,7 @@ fn panggil_fungsi<M: Module>(
     };
 
     let local_func = module.declare_func_in_func(func_id, builder.func);
-    let call_inst = builder.ins().call(local_func, argumen);
+    let call_inst = builder.ins().call(local_func, &cl_args);
     let results = builder.inst_results(call_inst);
 
     if results.is_empty() {
@@ -489,3 +535,4 @@ fn panggil_fungsi<M: Module>(
         Ok(Some(results[0]))
     }
 }
+

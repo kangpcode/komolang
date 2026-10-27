@@ -2,9 +2,12 @@
 
 use std::env;
 use std::fs;
+use std::path::{Path, PathBuf};
 use std::process;
 
+use komo_codegen::{bangun_executable_native, jalankan_jit, KonfigurasiTarget};
 use komo_diag::render_semua;
+use komo_ir::ModulIr;
 use komo_parser::urai;
 
 const VERSI: &str = env!("CARGO_PKG_VERSION");
@@ -43,6 +46,32 @@ fn main() {
             let optimasi = args.iter().any(|a| a == "--optimasi" || a == "-O");
             cetak_kir(&args[2], optimasi);
         }
+        "bangun" => {
+            if args.len() < 3 {
+                eprintln!("Kesalahan: Berikan jalur berkas .komo untuk dikompilasi.");
+                eprintln!("Contoh: komo bangun berkas.komo [-o nama_biner] [--optimasi]");
+                process::exit(1);
+            }
+            let berkas = &args[2];
+            let optimasi = args.iter().any(|a| a == "--optimasi" || a == "-O");
+            let mut jalur_keluar = PathBuf::from(berkas.trim_end_matches(".komo"));
+            for i in 0..args.len() {
+                if args[i] == "-o" && i + 1 < args.len() {
+                    jalur_keluar = PathBuf::from(&args[i + 1]);
+                }
+            }
+            bangun_berkas(berkas, &jalur_keluar, optimasi);
+        }
+        "jalankan" => {
+            if args.len() < 3 {
+                eprintln!("Kesalahan: Berikan jalur berkas .komo untuk dijalankan.");
+                eprintln!("Contoh: komo jalankan berkas.komo [--optimasi]");
+                process::exit(1);
+            }
+            let berkas = &args[2];
+            let optimasi = args.iter().any(|a| a == "--optimasi" || a == "-O");
+            jalankan_berkas(berkas, optimasi);
+        }
         perintah_tak_dikenal => {
             eprintln!("Perintah tidak dikenal: '{}'", perintah_tak_dikenal);
             eprintln!("Gunakan 'komo bantuan' untuk melihat daftar perintah yang tersedia.");
@@ -60,6 +89,8 @@ fn tampilkan_bantuan() {
     println!("Penggunaan: komo [perintah] [opsi]");
     println!();
     println!("Perintah Utama:");
+    println!("  bangun <berkas.komo>    Mengompilasi kode Komolang menjadi biner native executable (-o, --optimasi)");
+    println!("  jalankan <berkas.komo>  Menjalankan program Komolang langsung via mesin JIT native (--optimasi)");
     println!("  periksa <berkas.komo>   Memeriksa sintaks leksikal dan tata bahasa (--dump-kir)");
     println!("  ir <berkas.komo>        Menghasilkan dan menampilkan dump KIR SSA (--optimasi)");
     println!("  versi                   Menampilkan informasi versi Komolang");
@@ -67,10 +98,85 @@ fn tampilkan_bantuan() {
     println!();
     println!("Perintah Lanjutan (Rencana Tahap 7):");
     println!("  baru <nama>             Membuat proyek Komolang baru");
-    println!("  bangun                  Mengompilasi proyek menjadi biner native");
-    println!("  jalankan [berkas.komo]  Menjalankan program Komolang langsung");
     println!("  uji                     Menjalankan suite tes otomatis");
     println!("  format                  Memformat berkas kode sumber Komolang");
+}
+
+fn parsing_dan_lowering(jalur: &str, optimasi: bool) -> ModulIr {
+    let konten = match fs::read_to_string(jalur) {
+        Ok(k) => k,
+        Err(e) => {
+            eprintln!("Gagal membaca berkas '{}': {}", jalur, e);
+            process::exit(1);
+        }
+    };
+
+    let hasil_urai = urai(&konten);
+    if !hasil_urai.berhasil() {
+        eprintln!("{}", render_semua(&hasil_urai.diagnostik, jalur, &konten));
+        process::exit(1);
+    }
+
+    let hasil_sema = komo_sema::periksa(&hasil_urai.berkas);
+    if !hasil_sema.berhasil() {
+        eprintln!("{}", render_semua(&hasil_sema.diagnostik, jalur, &konten));
+        process::exit(1);
+    }
+
+    let mut modul_ir = komo_ir::turunkan_ke_kir(&hasil_urai.berkas, &hasil_sema);
+
+    if optimasi {
+        let pengoptimal = komo_ir::Pengoptimal::baru(2);
+        pengoptimal.optimalkan_modul(&mut modul_ir);
+    }
+
+    if let Err(galat_verif) = komo_ir::verifikasi_modul(&modul_ir) {
+        eprintln!("❌ Galat Verifikasi KIR:");
+        for g in galat_verif {
+            eprintln!("  - {}", g);
+        }
+        process::exit(1);
+    }
+
+    modul_ir
+}
+
+fn bangun_berkas(jalur: &str, output: &Path, optimasi: bool) {
+    let modul_ir = parsing_dan_lowering(jalur, optimasi);
+    let mut target = KonfigurasiTarget::untuk_host();
+    target.optimasi = optimasi;
+
+    println!(
+        "Mengompilasi '{}' menjadi biner native '{}' (target: {})...",
+        jalur,
+        output.display(),
+        target.sebagai_triple_str()
+    );
+
+    match bangun_executable_native(&modul_ir, &target, output) {
+        Ok(path) => {
+            println!("✅ Berhasil membangun biner native: {}", path.display());
+        }
+        Err(e) => {
+            eprintln!("❌ Gagal menautkan biner native: {}", e);
+            process::exit(1);
+        }
+    }
+}
+
+fn jalankan_berkas(jalur: &str, optimasi: bool) {
+    let modul_ir = parsing_dan_lowering(jalur, optimasi);
+    match jalankan_jit(&modul_ir) {
+        Ok(kode_keluar) => {
+            if kode_keluar != 0 {
+                process::exit(kode_keluar as i32);
+            }
+        }
+        Err(e) => {
+            eprintln!("❌ Gagal mengeksekusi program: {}", e);
+            process::exit(1);
+        }
+    }
 }
 
 fn periksa_berkas(jalur: &str, dump_kir: bool) {
@@ -117,41 +223,7 @@ fn periksa_berkas(jalur: &str, dump_kir: bool) {
 }
 
 fn cetak_kir(jalur: &str, optimasi: bool) {
-    let konten = match fs::read_to_string(jalur) {
-        Ok(k) => k,
-        Err(e) => {
-            eprintln!("Gagal membaca berkas '{}': {}", jalur, e);
-            process::exit(1);
-        }
-    };
-
-    let hasil_urai = urai(&konten);
-    if !hasil_urai.berhasil() {
-        eprintln!("{}", render_semua(&hasil_urai.diagnostik, jalur, &konten));
-        process::exit(1);
-    }
-
-    let hasil_sema = komo_sema::periksa(&hasil_urai.berkas);
-    if !hasil_sema.berhasil() {
-        eprintln!("{}", render_semua(&hasil_sema.diagnostik, jalur, &konten));
-        process::exit(1);
-    }
-
-    let mut modul_ir = komo_ir::turunkan_ke_kir(&hasil_urai.berkas, &hasil_sema);
-
-    if optimasi {
-        let pengoptimal = komo_ir::Pengoptimal::baru(2);
-        pengoptimal.optimalkan_modul(&mut modul_ir);
-    }
-
-    if let Err(galat_verif) = komo_ir::verifikasi_modul(&modul_ir) {
-        eprintln!("❌ Galat Verifikasi KIR:");
-        for g in galat_verif {
-            eprintln!("  - {}", g);
-        }
-        process::exit(1);
-    }
-
+    let modul_ir = parsing_dan_lowering(jalur, optimasi);
     println!("{}", komo_ir::cetak_modul(&modul_ir));
 }
 

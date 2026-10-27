@@ -22,6 +22,8 @@ mod tes_pretty_printer;
 mod tes_semantik_galat;
 #[cfg(test)]
 mod tes_semantik_valid;
+#[cfg(test)]
+mod tes_codegen_native;
 
 #[cfg(test)]
 mod tests {

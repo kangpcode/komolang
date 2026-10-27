@@ -2,8 +2,17 @@
 
 paket utama
 
-impor "std/matematika"
 impor "std/cetak"
 
-publik fungsi hitung_faktorial() {
+publik fungsi faktorial(n: bulat) bulat {
+    jika n <= 1 {
+        kembali 1
+    } lainnya {
+        kembali n * faktorial(n - 1)
+    }
+}
+
+publik fungsi utama() {
+    biar hasil = faktorial(5)
+    cetak.baris("Perhitungan selesai")
 }

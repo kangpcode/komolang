@@ -5,4 +5,5 @@ paket utama
 impor "std/cetak"
 
 publik fungsi utama() {
+    cetak.baris("Halo, Dunia!")
 }

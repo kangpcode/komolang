@@ -303,12 +303,21 @@ name = "komo"
 version = "0.1.0"
 dependencies = [
  "komo_ast",
+ "komo_codegen",
  "komo_diag",
  "komo_ir",
  "komo_lexer",
  "komo_parser",
  "komo_runtime",
  "komo_sema",
+]
+
+[[package]]
+name = "komo_asm"
+version = "0.1.0"
+dependencies = [
+ "komo_diag",
+ "komo_ir",
 ]
 
 [[package]]
@@ -328,6 +337,7 @@ dependencies = [
  "komo_diag",
  "komo_ir",
  "komo_runtime",
+ "libc",
  "target-lexicon",
 ]
 
@@ -381,6 +391,7 @@ name = "komo_tests"
 version = "0.1.0"
 dependencies = [
  "komo_ast",
+ "komo_codegen",
  "komo_diag",
  "komo_ir",
  "komo_lexer",
