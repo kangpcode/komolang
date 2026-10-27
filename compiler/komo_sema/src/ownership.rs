@@ -100,7 +100,9 @@ impl PelacakOwnership {
                         ),
                         rentang,
                     )
-                    .dengan_saran("nilai telah dipindahkan; buat salinan baru atau hindari penggunaan ulang"));
+                    .dengan_saran(
+                        "nilai telah dipindahkan; buat salinan baru atau hindari penggunaan ulang",
+                    ));
                 }
             }
         }
@@ -138,10 +140,7 @@ impl PelacakOwnership {
                     if *jumlah_pinjam > 0 || *pinjam_mutabel {
                         return Err(Diagnostik::galat(
                             kode::PEMINJAMAN_KONFLIK,
-                            format!(
-                                "tidak dapat memindahkan '{}' saat sedang dipinjam",
-                                nama
-                            ),
+                            format!("tidak dapat memindahkan '{}' saat sedang dipinjam", nama),
                             rentang,
                         ));
                     }

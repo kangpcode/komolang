@@ -174,10 +174,7 @@ impl TabelSimbol {
 
     /// Menambahkan simbol ke lingkup saat ini. Melaporkan galat jika ada nama duplikat pada lingkup yang sama.
     pub fn tambah_simbol(&mut self, simbol: Simbol) -> Result<(), Diagnostik> {
-        let sekarang = self
-            .lingkup
-            .last_mut()
-            .expect("lingkup tidak boleh kosong");
+        let sekarang = self.lingkup.last_mut().expect("lingkup tidak boleh kosong");
         if let Some(lama) = sekarang.simbol.get(&simbol.nama) {
             return Err(Diagnostik::galat(
                 kode::SIMBOL_DUPLIKAT,

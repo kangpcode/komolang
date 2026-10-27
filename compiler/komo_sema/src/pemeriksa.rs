@@ -45,7 +45,11 @@ impl PemeriksaSemantik {
             let nama_alias = if let Some(a) = &imp.alias {
                 a.nama.clone()
             } else {
-                imp.jalur.split('/').last().unwrap_or(&imp.jalur).to_string()
+                imp.jalur
+                    .split('/')
+                    .next_back()
+                    .unwrap_or(&imp.jalur)
+                    .to_string()
             };
             let _ = self.tabel.tambah_simbol(Simbol {
                 nama: nama_alias,
@@ -158,8 +162,7 @@ impl PemeriksaSemantik {
 
                 if let Some(penerima) = &f.penerima {
                     // Ini metode pada tipe penerima
-                    let tipe_penerima =
-                        tipe_dari_ast(&penerima.tipe, &|n| self.tabel.cari_tipe(n));
+                    let tipe_penerima = tipe_dari_ast(&penerima.tipe, &|n| self.tabel.cari_tipe(n));
                     let nama_penerima = match &tipe_penerima {
                         SemTipe::Pinjam { dalam, .. } => dalam.nama(),
                         lain => lain.nama(),
@@ -273,7 +276,10 @@ impl PemeriksaSemantik {
                             nama: penerima.nama.nama.clone(),
                             jenis: JenisSimbol::Variabel {
                                 tipe: tipe_penerima,
-                                mutabel: matches!(penerima.tipe.jenis, JenisTipe::Pinjam { mutabel: true, .. }),
+                                mutabel: matches!(
+                                    penerima.tipe.jenis,
+                                    JenisTipe::Pinjam { mutabel: true, .. }
+                                ),
                                 sudah_dipindah: false,
                                 jumlah_pinjam: 0,
                                 pinjam_mutabel: false,
@@ -630,8 +636,9 @@ impl PemeriksaSemantik {
                         self.daftarkan_pola_ke_lingkup(&argumen[0], dalam);
                     }
                 } else if let SemTipe::Enum { varian, .. } = tipe_nilai {
-                    if let Some((_, tipe_isi)) =
-                        varian.iter().find(|(v, _)| v.eq_ignore_ascii_case(&nama.nama))
+                    if let Some((_, tipe_isi)) = varian
+                        .iter()
+                        .find(|(v, _)| v.eq_ignore_ascii_case(&nama.nama))
                     {
                         for (i, p) in argumen.iter().enumerate() {
                             if let Some(t) = tipe_isi.get(i) {
@@ -677,7 +684,9 @@ impl PemeriksaSemantik {
                             format!("nama '{}' tidak ditemukan dalam lingkup ini", id.nama),
                             id.rentang,
                         )
-                        .dengan_saran("pastikan nama variabel, fungsi, atau tipe sudah dideklarasikan"),
+                        .dengan_saran(
+                            "pastikan nama variabel, fungsi, atau tipe sudah dideklarasikan",
+                        ),
                     );
                     SemTipe::Galat
                 }
@@ -703,7 +712,11 @@ impl PemeriksaSemantik {
                         } else {
                             self.lapor(Diagnostik::galat(
                                 kode::OPERATOR_TIDAK_DIDUKUNG,
-                                format!("operator '+' tidak didukung untuk tipe '{}' dan '{}'", t_kiri.nama(), t_kanan.nama()),
+                                format!(
+                                    "operator '+' tidak didukung untuk tipe '{}' dan '{}'",
+                                    t_kiri.nama(),
+                                    t_kanan.nama()
+                                ),
                                 e.rentang,
                             ));
                             SemTipe::Galat
@@ -789,7 +802,10 @@ impl PemeriksaSemantik {
                         if !t_operan.cocok_dengan(&SemTipe::Bool) {
                             self.lapor(Diagnostik::galat(
                                 kode::OPERATOR_TIDAK_DIDUKUNG,
-                                format!("operator logika bukan '!' memerlukan tipe 'bool', bukan '{}'", t_operan.nama()),
+                                format!(
+                                    "operator logika bukan '!' memerlukan tipe 'bool', bukan '{}'",
+                                    t_operan.nama()
+                                ),
                                 e.rentang,
                             ));
                             SemTipe::Galat
@@ -929,10 +945,15 @@ impl PemeriksaSemantik {
                         self.lapor(
                             Diagnostik::galat(
                                 kode::BUKAN_FUNGSI,
-                                format!("tipe '{}' bukan fungsi dan tidak dapat dipanggil", lain.nama()),
+                                format!(
+                                    "tipe '{}' bukan fungsi dan tidak dapat dipanggil",
+                                    lain.nama()
+                                ),
                                 fungsi.rentang,
                             )
-                            .dengan_saran("hanya fungsi atau metode yang dapat dipanggil dengan '()'"),
+                            .dengan_saran(
+                                "hanya fungsi atau metode yang dapat dipanggil dengan '()'",
+                            ),
                         );
                         SemTipe::Galat
                     }
@@ -1023,7 +1044,9 @@ impl PemeriksaSemantik {
                             ),
                             objek.rentang,
                         )
-                        .dengan_saran("akses bidang '.' hanya berlaku untuk tipe struktur atau modul"),
+                        .dengan_saran(
+                            "akses bidang '.' hanya berlaku untuk tipe struktur atau modul",
+                        ),
                     );
                 }
                 SemTipe::Galat
@@ -1074,7 +1097,9 @@ impl PemeriksaSemantik {
                                 format!("tipe '{}' tidak dapat diindeks dengan '[]'", lain.nama()),
                                 objek.rentang,
                             )
-                            .dengan_saran("operasi pengindeksan hanya didukung untuk larik dan peta"),
+                            .dengan_saran(
+                                "operasi pengindeksan hanya didukung untuk larik dan peta",
+                            ),
                         );
                         SemTipe::Galat
                     }

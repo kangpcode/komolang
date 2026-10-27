@@ -24,7 +24,10 @@ fn cek_semantik_galat(sumber: &str, kode_diharapkan: &'static str) {
     );
 
     assert!(
-        hasil_sema.diagnostik.iter().any(|d| d.kode == kode_diharapkan),
+        hasil_sema
+            .diagnostik
+            .iter()
+            .any(|d| d.kode == kode_diharapkan),
         "Tidak menemukan kode diagnostik semantik '{}'. Ditemukan:\n{:?}",
         kode_diharapkan,
         hasil_sema.diagnostik
