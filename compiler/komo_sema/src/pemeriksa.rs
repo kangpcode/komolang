@@ -160,8 +160,12 @@ impl PemeriksaSemantik {
                     // Ini metode pada tipe penerima
                     let tipe_penerima =
                         tipe_dari_ast(&penerima.tipe, &|n| self.tabel.cari_tipe(n));
+                    let nama_penerima = match &tipe_penerima {
+                        SemTipe::Pinjam { dalam, .. } => dalam.nama(),
+                        lain => lain.nama(),
+                    };
                     if let Err(d) = self.tabel.tambah_simbol(Simbol {
-                        nama: format!("{}.{}", tipe_penerima.nama(), f.nama.nama),
+                        nama: format!("{}.{}", nama_penerima, f.nama.nama),
                         jenis: JenisSimbol::Metode {
                             tipe_penerima,
                             tipe: tipe_fungsi,

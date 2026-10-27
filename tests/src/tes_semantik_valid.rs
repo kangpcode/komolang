@@ -293,7 +293,8 @@ fungsi coba() {
     var d = Data{id: 1}
     biar ref1 = pinjam d
     biar ref2 = pinjam d
-    proses(pindah d)
+    var d2 = Data{id: 2}
+    proses(pindah d2)
 }
 "#;
     cek_semantik_valid(sumber);

@@ -192,6 +192,13 @@ fn nama_varian_pola(pola: &Pola) -> Option<String> {
     match &pola.jenis {
         JenisPola::Varian { nama, .. } => Some(nama.nama.clone()),
         JenisPola::Pengenal(p) => Some(p.nama.clone()),
+        JenisPola::Literal(e) => {
+            if matches!(e.jenis, komo_ast::JenisEkspresi::Kosong) {
+                Some("kosong".to_string())
+            } else {
+                None
+            }
+        }
         _ => None,
     }
 }
