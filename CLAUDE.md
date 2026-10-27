@@ -161,11 +161,11 @@ fungsi utama() {
 
 ### Tahap 2 — Analisis Semantik & Sistem Tipe
 
-- [ ] Tabel simbol, resolusi nama, sistem modul/paket.
-- [ ] Pengecekan tipe + inferensi tipe lokal.
-- [ ] Generic, antarmuka, enum/tipe aljabar, `mungkin<T>` dan `hasil<T,E>`.
-- [ ] Pengecek ownership/peminjaman sederhana + pesan error ramah.
-- [ ] Pengecekan eksaustif pada `cocok`.
+- [x] Tabel simbol, resolusi nama, sistem modul/paket.
+- [x] Pengecekan tipe + inferensi tipe lokal.
+- [x] Generic, antarmuka, enum/tipe aljabar, `mungkin<T>` dan `hasil<T,E>`.
+- [x] Pengecek ownership/peminjaman sederhana + pesan error ramah.
+- [x] Pengecekan eksaustif pada `cocok`.
 
 * **Selesai bila:** program valid lolos, program salah ditolak dengan pesan tepat (suite tes diagnostik).
 
