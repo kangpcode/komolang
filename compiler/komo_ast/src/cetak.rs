@@ -257,9 +257,13 @@ fn memuat_struktur(e: &Ekspresi) -> bool {
             fungsi, argumen, ..
         } => memuat_struktur(fungsi) || argumen.iter().any(memuat_struktur),
         JenisEkspresi::Bidang { objek, .. } => memuat_struktur(objek),
-        JenisEkspresi::Indeks { objek, indeks } => memuat_struktur(objek) || memuat_struktur(indeks),
+        JenisEkspresi::Indeks { objek, indeks } => {
+            memuat_struktur(objek) || memuat_struktur(indeks)
+        }
         JenisEkspresi::Larik(item) => item.iter().any(memuat_struktur),
-        JenisEkspresi::Rentang { awal, akhir, .. } => memuat_struktur(awal) || memuat_struktur(akhir),
+        JenisEkspresi::Rentang { awal, akhir, .. } => {
+            memuat_struktur(awal) || memuat_struktur(akhir)
+        }
         JenisEkspresi::Teks(bagian) => bagian
             .iter()
             .any(|b| matches!(b, BagianTeks::Ekspresi(x) if memuat_struktur(x))),

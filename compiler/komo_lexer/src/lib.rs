@@ -141,8 +141,9 @@ impl JenisToken {
             Atau => "atau",
             Sebagai => "sebagai",
             GarisBawah => "_",
-            Pengenal(_) | LiteralBulat(_) | LiteralDesimal(_) | LiteralTeks(_)
-            | LiteralRune(_) => "",
+            Pengenal(_) | LiteralBulat(_) | LiteralDesimal(_) | LiteralTeks(_) | LiteralRune(_) => {
+                ""
+            }
             Tambah => "+",
             Kurang => "-",
             Kali => "*",
@@ -329,7 +330,8 @@ impl<'a> Pemindai<'a> {
     }
 
     fn lapor(&mut self, kode: &'static str, pesan: impl Into<String>, rentang: Rentang) {
-        self.diagnostik.push(Diagnostik::galat(kode, pesan, rentang));
+        self.diagnostik
+            .push(Diagnostik::galat(kode, pesan, rentang));
     }
 
     fn lapor_saran(
@@ -986,10 +988,39 @@ mod tests {
     #[test]
     fn tes_kata_kunci_indonesia() {
         let semua = [
-            "paket", "impor", "fungsi", "kembali", "biar", "var", "konst", "jika", "lainnya",
-            "selagi", "untuk", "dalam", "pilih", "kasus", "cocok", "tipe", "struktur",
-            "antarmuka", "enum", "jalankan", "saluran", "tunda", "benar", "salah", "kosong",
-            "pinjam", "pindah", "publik", "pribadi", "tidak_aman", "dan", "atau", "sebagai",
+            "paket",
+            "impor",
+            "fungsi",
+            "kembali",
+            "biar",
+            "var",
+            "konst",
+            "jika",
+            "lainnya",
+            "selagi",
+            "untuk",
+            "dalam",
+            "pilih",
+            "kasus",
+            "cocok",
+            "tipe",
+            "struktur",
+            "antarmuka",
+            "enum",
+            "jalankan",
+            "saluran",
+            "tunda",
+            "benar",
+            "salah",
+            "kosong",
+            "pinjam",
+            "pindah",
+            "publik",
+            "pribadi",
+            "tidak_aman",
+            "dan",
+            "atau",
+            "sebagai",
         ];
         for kata in semua {
             let j = cocokkan_kata_kunci(kata).unwrap_or_else(|| panic!("{kata} bukan kata kunci"));
@@ -1009,63 +1040,97 @@ mod tests {
 
     #[test]
     fn tes_pengenal_dan_garis_bawah() {
-        assert_eq!(jenis("a _x x_1 _"), vec![id("a"), id("_x"), id("x_1"), JenisToken::GarisBawah]);
+        assert_eq!(
+            jenis("a _x x_1 _"),
+            vec![id("a"), id("_x"), id("x_1"), JenisToken::GarisBawah]
+        );
     }
 
     #[test]
     fn tes_angka_bulat() {
-        assert_eq!(jenis("0 42 1_000"), vec![
-            JenisToken::LiteralBulat(0),
-            JenisToken::LiteralBulat(42),
-            JenisToken::LiteralBulat(1000),
-        ]);
+        assert_eq!(
+            jenis("0 42 1_000"),
+            vec![
+                JenisToken::LiteralBulat(0),
+                JenisToken::LiteralBulat(42),
+                JenisToken::LiteralBulat(1000),
+            ]
+        );
     }
 
     #[test]
     fn tes_angka_basis_lain() {
-        assert_eq!(jenis("0xFF 0x1A_3F 0b1010_0110 0o755"), vec![
-            JenisToken::LiteralBulat(255),
-            JenisToken::LiteralBulat(0x1A3F),
-            JenisToken::LiteralBulat(0b1010_0110),
-            JenisToken::LiteralBulat(0o755),
-        ]);
+        assert_eq!(
+            jenis("0xFF 0x1A_3F 0b1010_0110 0o755"),
+            vec![
+                JenisToken::LiteralBulat(255),
+                JenisToken::LiteralBulat(0x1A3F),
+                JenisToken::LiteralBulat(0b1010_0110),
+                JenisToken::LiteralBulat(0o755),
+            ]
+        );
     }
 
     #[test]
     fn tes_angka_desimal_dan_eksponen() {
-        assert_eq!(jenis("3.14 1.0e-5 6.022e23 6e2 2E+3"), vec![
-            JenisToken::LiteralDesimal(3.14),
-            JenisToken::LiteralDesimal(1.0e-5),
-            JenisToken::LiteralDesimal(6.022e23),
-            JenisToken::LiteralDesimal(600.0),
-            JenisToken::LiteralDesimal(2000.0),
-        ]);
+        assert_eq!(
+            jenis("3.25 1.0e-5 6.022e23 6e2 2E+3"),
+            vec![
+                JenisToken::LiteralDesimal(3.25),
+                JenisToken::LiteralDesimal(1.0e-5),
+                JenisToken::LiteralDesimal(6.022e23),
+                JenisToken::LiteralDesimal(600.0),
+                JenisToken::LiteralDesimal(2000.0),
+            ]
+        );
     }
 
     #[test]
     fn tes_rentang_bukan_desimal() {
-        assert_eq!(jenis("0..5"), vec![
-            JenisToken::LiteralBulat(0),
-            JenisToken::TitikTitik,
-            JenisToken::LiteralBulat(5),
-        ]);
-        assert_eq!(jenis("0..=5"), vec![
-            JenisToken::LiteralBulat(0),
-            JenisToken::TitikTitikSama,
-            JenisToken::LiteralBulat(5),
-        ]);
+        assert_eq!(
+            jenis("0..5"),
+            vec![
+                JenisToken::LiteralBulat(0),
+                JenisToken::TitikTitik,
+                JenisToken::LiteralBulat(5),
+            ]
+        );
+        assert_eq!(
+            jenis("0..=5"),
+            vec![
+                JenisToken::LiteralBulat(0),
+                JenisToken::TitikTitikSama,
+                JenisToken::LiteralBulat(5),
+            ]
+        );
     }
 
     #[test]
     fn tes_bulat_maksimum_u64() {
-        assert_eq!(jenis("18446744073709551615"), vec![JenisToken::LiteralBulat(u64::MAX)]);
-        assert_eq!(kode_galat("18446744073709551616"), vec![kode::ANGKA_TIDAK_VALID]);
+        assert_eq!(
+            jenis("18446744073709551615"),
+            vec![JenisToken::LiteralBulat(u64::MAX)]
+        );
+        assert_eq!(
+            kode_galat("18446744073709551616"),
+            vec![kode::ANGKA_TIDAK_VALID]
+        );
     }
 
     #[test]
     fn tes_teks_sederhana_dan_kosong() {
-        assert_eq!(jenis("\"halo\""), vec![JenisToken::LiteralTeks(vec![BagianToken::Teks("halo".into())])]);
-        assert_eq!(jenis("\"\""), vec![JenisToken::LiteralTeks(vec![BagianToken::Teks(String::new())])]);
+        assert_eq!(
+            jenis("\"halo\""),
+            vec![JenisToken::LiteralTeks(vec![BagianToken::Teks(
+                "halo".into()
+            )])]
+        );
+        assert_eq!(
+            jenis("\"\""),
+            vec![JenisToken::LiteralTeks(vec![BagianToken::Teks(
+                String::new()
+            )])]
+        );
     }
 
     #[test]
@@ -1082,7 +1147,9 @@ mod tests {
     fn tes_teks_kurung_harfiah() {
         assert_eq!(
             jenis("\"{{x}}\""),
-            vec![JenisToken::LiteralTeks(vec![BagianToken::Teks("{x}".into())])]
+            vec![JenisToken::LiteralTeks(vec![BagianToken::Teks(
+                "{x}".into()
+            )])]
         );
     }
 
@@ -1121,13 +1188,16 @@ mod tests {
 
     #[test]
     fn tes_rune() {
-        assert_eq!(jenis(r"'a' '\n' '\'' '🔥' '\u{41}'"), vec![
-            JenisToken::LiteralRune('a'),
-            JenisToken::LiteralRune('\n'),
-            JenisToken::LiteralRune('\''),
-            JenisToken::LiteralRune('🔥'),
-            JenisToken::LiteralRune('A'),
-        ]);
+        assert_eq!(
+            jenis(r"'a' '\n' '\'' '🔥' '\u{41}'"),
+            vec![
+                JenisToken::LiteralRune('a'),
+                JenisToken::LiteralRune('\n'),
+                JenisToken::LiteralRune('\''),
+                JenisToken::LiteralRune('🔥'),
+                JenisToken::LiteralRune('A'),
+            ]
+        );
     }
 
     #[test]
@@ -1136,9 +1206,24 @@ mod tests {
         assert_eq!(
             jenis("+ - * / % = += -= *= /= %= == != < <= > >= !"),
             vec![
-                Tambah, Kurang, Kali, Bagi, SisaBagi, SamaDengan, TambahSama, KurangSama, KaliSama,
-                BagiSama, SisaSama, SamaKetat, TidakSama, KurangDari, KurangDariSama, LebihDari,
-                LebihDariSama, BukanLogika
+                Tambah,
+                Kurang,
+                Kali,
+                Bagi,
+                SisaBagi,
+                SamaDengan,
+                TambahSama,
+                KurangSama,
+                KaliSama,
+                BagiSama,
+                SisaSama,
+                SamaKetat,
+                TidakSama,
+                KurangDari,
+                KurangDariSama,
+                LebihDari,
+                LebihDariSama,
+                BukanLogika
             ]
         );
     }
@@ -1149,8 +1234,18 @@ mod tests {
         assert_eq!(
             jenis("; . : , .. ..= ( ) { } [ ]"),
             vec![
-                TitikKoma, Titik, TitikDua, Koma, TitikTitik, TitikTitikSama, KurungBuka,
-                KurungTutup, KurungKurawalBuka, KurungKurawalTutup, KurungSikuBuka, KurungSikuTutup
+                TitikKoma,
+                Titik,
+                TitikDua,
+                Koma,
+                TitikTitik,
+                TitikTitikSama,
+                KurungBuka,
+                KurungTutup,
+                KurungKurawalBuka,
+                KurungKurawalTutup,
+                KurungSikuBuka,
+                KurungSikuTutup
             ]
         );
     }
@@ -1160,13 +1255,24 @@ mod tests {
         use JenisToken::*;
         assert_eq!(
             jenis("a<b<c>>"),
-            vec![id("a"), KurangDari, id("b"), KurangDari, id("c"), LebihDari, LebihDari]
+            vec![
+                id("a"),
+                KurangDari,
+                id("b"),
+                KurangDari,
+                id("c"),
+                LebihDari,
+                LebihDari
+            ]
         );
     }
 
     #[test]
     fn tes_komentar_sebaris_dan_blok() {
-        assert_eq!(jenis("a // komentar\nb /* x */ c"), vec![id("a"), id("b"), id("c")]);
+        assert_eq!(
+            jenis("a // komentar\nb /* x */ c"),
+            vec![id("a"), id("b"), id("c")]
+        );
     }
 
     #[test]
@@ -1240,7 +1346,10 @@ mod tests {
         assert_eq!(kode_galat("12abc"), vec![kode::ANGKA_TIDAK_VALID]);
         assert_eq!(kode_galat("\"a } b\""), vec![kode::KURUNG_KURAWAL_TUNGGAL]);
         assert_eq!(kode_galat("\"a {} b\""), vec![kode::INTERPOLASI_KOSONG]);
-        assert_eq!(kode_galat("\"a {b\""), vec![kode::INTERPOLASI_TIDAK_DITUTUP]);
+        assert_eq!(
+            kode_galat("\"a {b\""),
+            vec![kode::INTERPOLASI_TIDAK_DITUTUP]
+        );
         assert_eq!(kode_galat("''"), vec![kode::RUNE_TIDAK_VALID]);
         assert_eq!(kode_galat("'ab'"), vec![kode::RUNE_TIDAK_VALID]);
     }

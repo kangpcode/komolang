@@ -82,10 +82,7 @@ fn periksa_berkas(jalur: &str) {
             hasil.berkas.deklarasi.len()
         );
     } else {
-        eprintln!(
-            "{}",
-            render_semua(&hasil.diagnostik, jalur, &konten)
-        );
+        eprintln!("{}", render_semua(&hasil.diagnostik, jalur, &konten));
         process::exit(1);
     }
 }

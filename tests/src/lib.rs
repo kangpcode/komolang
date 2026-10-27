@@ -3,6 +3,17 @@
 //! Test suite integrasi dan konformansi Komolang.
 
 #[cfg(test)]
+mod tes_fuzzing;
+#[cfg(test)]
+mod tes_leksikal;
+#[cfg(test)]
+mod tes_pengurai_galat;
+#[cfg(test)]
+mod tes_pengurai_valid;
+#[cfg(test)]
+mod tes_pretty_printer;
+
+#[cfg(test)]
 mod tests {
     use komo_diag::render_semua;
     use komo_parser::urai;

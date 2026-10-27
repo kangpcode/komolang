@@ -151,11 +151,11 @@ fungsi utama() {
 
 ### Tahap 1 — Frontend: Lexer, Parser, AST
 
-- [ ] Lexer dengan dukungan UTF-8, interpolasi `{ekspresi}` di string, komentar `//` dan `/* */`.
-- [ ] Parser (recursive descent + Pratt untuk ekspresi) menghasilkan AST lengkap.
-- [ ] Pemulihan error (error recovery) agar satu kesalahan tidak menutupi yang lain.
-- [ ] Pesan error berbahasa Indonesia dengan lokasi dan saran.
-- [ ] Pretty-printer AST dan fuzzing parser.
+- [x] Lexer dengan dukungan UTF-8, interpolasi `{ekspresi}` di string, komentar `//` dan `/* */`.
+- [x] Parser (recursive descent + Pratt untuk ekspresi) menghasilkan AST lengkap.
+- [x] Pemulihan error (error recovery) agar satu kesalahan tidak menutupi yang lain.
+- [x] Pesan error berbahasa Indonesia dengan lokasi dan saran.
+- [x] Pretty-printer AST dan fuzzing parser.
 
 * **Selesai bila:** seluruh contoh sintaks di atas terparse dan ada >200 tes (valid dan invalid).
 

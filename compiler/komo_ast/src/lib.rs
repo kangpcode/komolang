@@ -197,10 +197,7 @@ pub struct Tipe {
 #[derive(Debug, Clone, PartialEq)]
 pub enum JenisTipe {
     /// Nama tipe, mis. `bulat`, `larik<teks>`, `hasil<T, E>`, `saluran<bulat>`.
-    Nama {
-        nama: Pengenal,
-        argumen: Vec<Tipe>,
-    },
+    Nama { nama: Pengenal, argumen: Vec<Tipe> },
     /// `pinjam T` atau `pinjam var T`.
     Pinjam { mutabel: bool, dalam: Box<Tipe> },
 }

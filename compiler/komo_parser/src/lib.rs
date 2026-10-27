@@ -190,7 +190,8 @@ fn padanan_inggris(nama: &str) -> Option<&'static str> {
 
 fn saran_padanan(t: &Token) -> Option<String> {
     if let JenisToken::Pengenal(n) = &t.jenis {
-        padanan_inggris(n).map(|k| format!("gunakan kata kunci Komolang '{}' sebagai ganti '{}'", k, n))
+        padanan_inggris(n)
+            .map(|k| format!("gunakan kata kunci Komolang '{}' sebagai ganti '{}'", k, n))
     } else {
         None
     }
@@ -216,7 +217,14 @@ impl Pengurai {
         if perlu_akhir {
             let rentang = tokens
                 .last()
-                .map(|t| Rentang::baru(t.rentang.akhir, t.rentang.akhir, t.rentang.baris, t.rentang.kolom))
+                .map(|t| {
+                    Rentang::baru(
+                        t.rentang.akhir,
+                        t.rentang.akhir,
+                        t.rentang.baris,
+                        t.rentang.kolom,
+                    )
+                })
                 .unwrap_or_else(Rentang::titik_kosong);
             tokens.push(Token {
                 jenis: JenisToken::AkhirBerkas,
@@ -293,12 +301,8 @@ impl Pengurai {
         if self.kedalaman >= BATAS_KEDALAMAN {
             let rentang = self.sekarang().rentang;
             return self.galat(
-                Diagnostik::galat(
-                    kode::TERLALU_DALAM,
-                    "penyarangan terlalu dalam",
-                    rentang,
-                )
-                .dengan_saran("pecah ekspresi atau blok menjadi bagian yang lebih sederhana"),
+                Diagnostik::galat(kode::TERLALU_DALAM, "penyarangan terlalu dalam", rentang)
+                    .dengan_saran("pecah ekspresi atau blok menjadi bagian yang lebih sederhana"),
             );
         }
         self.kedalaman += 1;
@@ -340,7 +344,11 @@ impl Pengurai {
             j => {
                 let mut d = Diagnostik::galat(
                     kode::DIHARAPKAN_NAMA,
-                    format!("diharapkan nama {}, tetapi ditemukan {}", konteks, j.deskripsi()),
+                    format!(
+                        "diharapkan nama {}, tetapi ditemukan {}",
+                        konteks,
+                        j.deskripsi()
+                    ),
                     t.rentang,
                 );
                 if j.adalah_kata_kunci() {
@@ -424,10 +432,7 @@ impl Pengurai {
     fn akhiri_anggota(&mut self) -> Hasil<()> {
         let t = self.sekarang();
         if t.baris_baru_sebelum
-            || matches!(
-                t.jenis,
-                JenisToken::KurungKurawalTutup | JenisToken::Koma
-            )
+            || matches!(t.jenis, JenisToken::KurungKurawalTutup | JenisToken::Koma)
         {
             return Ok(());
         }
@@ -515,7 +520,9 @@ impl Pengurai {
                             "'impor' harus ditulis sebelum deklarasi lain",
                             rentang,
                         )
-                        .dengan_saran("pindahkan semua 'impor' ke bagian atas berkas, setelah 'paket'"),
+                        .dengan_saran(
+                            "pindahkan semua 'impor' ke bagian atas berkas, setelah 'paket'",
+                        ),
                     );
                 }
                 match self.urai_impor() {
@@ -563,7 +570,12 @@ impl Pengurai {
         DeklarasiPaket {
             nama: Pengenal::baru(
                 "",
-                Rentang::baru(t.rentang.awal, t.rentang.awal, t.rentang.baris, t.rentang.kolom),
+                Rentang::baru(
+                    t.rentang.awal,
+                    t.rentang.awal,
+                    t.rentang.baris,
+                    t.rentang.kolom,
+                ),
             ),
             rentang: t.rentang,
         }
@@ -795,10 +807,8 @@ impl Pengurai {
             self.harap(JenisToken::KurungTutup, "untuk menutup daftar parameter")?;
             let t = self.sekarang();
             let tipe_kembalian = if !t.baris_baru_sebelum
-                && !matches!(
-                    t.jenis,
-                    JenisToken::KurungKurawalTutup | JenisToken::Koma
-                ) {
+                && !matches!(t.jenis, JenisToken::KurungKurawalTutup | JenisToken::Koma)
+            {
                 Some(self.urai_tipe_data()?)
             } else {
                 None
@@ -837,7 +847,11 @@ impl Pengurai {
                 self.harap(JenisToken::KurungTutup, "untuk menutup data varian")?;
             }
             let rentang = self.rentang_sejak(nama.rentang);
-            v.push(Varian { nama, tipe, rentang });
+            v.push(Varian {
+                nama,
+                tipe,
+                rentang,
+            });
             self.akhiri_anggota()?;
         }
         self.harap_penutup_blok(buka.rentang)?;
@@ -1190,7 +1204,10 @@ impl Pengurai {
     fn urai_pilih(&mut self) -> Hasil<Pernyataan> {
         let awal = self.maju();
         let nilai = self.urai_kondisi()?;
-        let buka = self.harap(JenisToken::KurungKurawalBuka, "untuk memulai cabang 'pilih'")?;
+        let buka = self.harap(
+            JenisToken::KurungKurawalBuka,
+            "untuk memulai cabang 'pilih'",
+        )?;
         let mut kasus = Vec::new();
         let mut lainnya: Option<Vec<Pernyataan>> = None;
         loop {
@@ -1207,7 +1224,10 @@ impl Pengurai {
                 },
                 JenisToken::Lainnya => {
                     self.maju();
-                    if self.harap(JenisToken::TitikDua, "setelah 'lainnya'").is_err() {
+                    if self
+                        .harap(JenisToken::TitikDua, "setelah 'lainnya'")
+                        .is_err()
+                    {
                         self.sinkronkan_pernyataan();
                     } else {
                         let badan = self.urai_badan_kasus();
@@ -1293,7 +1313,10 @@ impl Pengurai {
     fn urai_cocok(&mut self) -> Hasil<Pernyataan> {
         let awal = self.maju();
         let nilai = self.urai_kondisi()?;
-        let buka = self.harap(JenisToken::KurungKurawalBuka, "untuk memulai cabang 'cocok'")?;
+        let buka = self.harap(
+            JenisToken::KurungKurawalBuka,
+            "untuk memulai cabang 'cocok'",
+        )?;
         let mut cabang = Vec::new();
         loop {
             self.lewati_titik_koma();
@@ -1414,7 +1437,9 @@ impl Pengurai {
                     format!("pola tidak valid: ditemukan {}", j.deskripsi()),
                     t.rentang,
                 )
-                .dengan_saran("pola dapat berupa '_', nama, varian seperti sukses(x), atau literal"),
+                .dengan_saran(
+                    "pola dapat berupa '_', nama, varian seperti sukses(x), atau literal",
+                ),
             ),
         }
     }
@@ -1623,7 +1648,10 @@ impl Pengurai {
                 JenisToken::KurungBuka if !self.baris_baru_memutus() => {
                     self.maju();
                     let (argumen, tutup) = self.dengan_konteks_bebas(|p| {
-                        p.urai_argumen_hingga(JenisToken::KurungTutup, "untuk menutup pemanggilan fungsi")
+                        p.urai_argumen_hingga(
+                            JenisToken::KurungTutup,
+                            "untuk menutup pemanggilan fungsi",
+                        )
                     })?;
                     let rentang = e.rentang.gabung(tutup.rentang);
                     e = Ekspresi::baru(
@@ -1743,7 +1771,8 @@ impl Pengurai {
             JenisToken::Saluran => {
                 self.maju();
                 let id = Pengenal::baru("saluran", t.rentang);
-                if self.cek(&JenisToken::KurangDari) && self.sekarang().rentang.awal == id.rentang.akhir
+                if self.cek(&JenisToken::KurangDari)
+                    && self.sekarang().rentang.awal == id.rentang.akhir
                 {
                     if let Some(argumen_tipe) = self.coba_argumen_tipe() {
                         return self.selesaikan_panggilan_generik(id, argumen_tipe);
@@ -1762,7 +1791,10 @@ impl Pengurai {
             JenisToken::KurungSikuBuka => {
                 self.maju();
                 let (item, tutup) = self.dengan_konteks_bebas(|p| {
-                    p.urai_argumen_hingga(JenisToken::KurungSikuTutup, "untuk menutup literal larik")
+                    p.urai_argumen_hingga(
+                        JenisToken::KurungSikuTutup,
+                        "untuk menutup literal larik",
+                    )
                 })?;
                 Ok(Ekspresi::baru(
                     JenisEkspresi::Larik(item),
@@ -1825,7 +1857,10 @@ impl Pengurai {
                     break;
                 }
             }
-            let tutup = p.harap(JenisToken::KurungKurawalTutup, "untuk menutup literal struktur")?;
+            let tutup = p.harap(
+                JenisToken::KurungKurawalTutup,
+                "untuk menutup literal struktur",
+            )?;
             Ok((v, tutup))
         })?;
         let rentang = nama.rentang.gabung(tutup.rentang);
@@ -1922,7 +1957,9 @@ mod tests {
         let e = urai_ekspresi_sumber("1 + 2 * 3").unwrap();
         assert_eq!(komo_ast::cetak::cetak_ekspresi(&e), "1 + 2 * 3");
         match e.jenis {
-            JenisEkspresi::Biner { operator, kanan, .. } => {
+            JenisEkspresi::Biner {
+                operator, kanan, ..
+            } => {
                 assert_eq!(operator, OperatorBiner::Tambah);
                 assert!(matches!(
                     kanan.jenis,
@@ -1962,7 +1999,9 @@ mod tests {
     #[test]
     fn tes_panggilan_generik_vs_perbandingan() {
         let g = urai_ekspresi_sumber("f<bulat>(1)").unwrap();
-        assert!(matches!(g.jenis, JenisEkspresi::Panggil { ref argumen_tipe, .. } if argumen_tipe.len() == 1));
+        assert!(
+            matches!(g.jenis, JenisEkspresi::Panggil { ref argumen_tipe, .. } if argumen_tipe.len() == 1)
+        );
         let p = urai_ekspresi_sumber("a < b").unwrap();
         assert!(matches!(
             p.jenis,
@@ -1979,7 +2018,9 @@ mod tests {
         match e.jenis {
             JenisEkspresi::Teks(bagian) => {
                 assert_eq!(bagian.len(), 3);
-                assert!(matches!(&bagian[1], BagianTeks::Ekspresi(x) if matches!(x.jenis, JenisEkspresi::Biner { .. })));
+                assert!(
+                    matches!(&bagian[1], BagianTeks::Ekspresi(x) if matches!(x.jenis, JenisEkspresi::Biner { .. }))
+                );
             }
             lain => panic!("bukan teks: {:?}", lain),
         }
@@ -2033,7 +2074,11 @@ mod tests {
 
     #[test]
     fn tes_batas_kedalaman_tidak_overflow() {
-        let dalam = format!("paket u\nbiar x = {}1{}\n", "(".repeat(2000), ")".repeat(2000));
+        let dalam = format!(
+            "paket u\nbiar x = {}1{}\n",
+            "(".repeat(2000),
+            ")".repeat(2000)
+        );
         let h = urai(&dalam);
         assert!(h.diagnostik.iter().any(|d| d.kode == kode::TERLALU_DALAM));
     }
