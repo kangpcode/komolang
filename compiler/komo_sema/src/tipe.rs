@@ -162,6 +162,11 @@ impl SemTipe {
             return true;
         }
 
+        // Koersi numerik: integer dapat diberikan ke desimal
+        if self.adalah_bulat() && target.adalah_desimal() {
+            return true;
+        }
+
         // Peminjaman: `pinjam var T` dapat diberikan ke `pinjam T` (koersi mutabel ke imutabel)
         if let (
             SemTipe::Pinjam {
