@@ -1,0 +1,22 @@
+# Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+[package]
+name = "komo_codegen"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+komo_ir = { workspace = true }
+komo_diag = { workspace = true }
+komo_runtime = { workspace = true }
+
+cranelift-codegen = { version = "0.137.0", features = ["all-native-arch", "gimli"] }
+cranelift-frontend = "0.137.0"
+cranelift-module = "0.137.0"
+cranelift-object = "0.137.0"
+cranelift-jit = "0.137.0"
+cranelift-native = "0.137.0"
+target-lexicon = "0.13"

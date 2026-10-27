@@ -727,10 +727,22 @@ impl<'a> KonteksFungsi<'a> {
                 let nama_fungsi = match &fungsi.jenis {
                     JenisEkspresi::Pengenal(id) => id.nama.clone(),
                     JenisEkspresi::Bidang { objek, nama } => {
-                        let obj_ptr = self.turunkan_ekspresi(objek);
-                        nilai_arg.push(obj_ptr);
-                        let tipe_obj = self.ambil_tipe_ekspresi(objek);
-                        format!("{}.{}", tipe_obj, nama.nama)
+                        if let JenisEkspresi::Pengenal(obj_id) = &objek.jenis {
+                            if !self.variabel_lokal.contains_key(&obj_id.nama) {
+                                // Pemanggilan fungsi dari modul impor (misal `cetak.baris`)
+                                format!("{}.{}", obj_id.nama, nama.nama)
+                            } else {
+                                let obj_ptr = self.turunkan_ekspresi(objek);
+                                nilai_arg.push(obj_ptr);
+                                let tipe_obj = self.ambil_tipe_ekspresi(objek);
+                                format!("{}.{}", tipe_obj, nama.nama)
+                            }
+                        } else {
+                            let obj_ptr = self.turunkan_ekspresi(objek);
+                            nilai_arg.push(obj_ptr);
+                            let tipe_obj = self.ambil_tipe_ekspresi(objek);
+                            format!("{}.{}", tipe_obj, nama.nama)
+                        }
                     }
                     _ => "panggilan_tak_dikenal".to_string(),
                 };

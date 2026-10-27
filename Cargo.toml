@@ -9,6 +9,7 @@ members = [
     "compiler/komo_parser",
     "compiler/komo_sema",
     "compiler/komo_ir",
+    "compiler/komo_codegen",
     "runtime/komo_runtime",
     "tests",
 ]
@@ -23,9 +24,11 @@ repository = "https://github.com/kangpcode/komolang"
 
 [workspace.dependencies]
 komo_ast = { path = "compiler/komo_ast" }
+komo_codegen = { path = "compiler/komo_codegen" }
 komo_diag = { path = "compiler/komo_diag" }
 komo_ir = { path = "compiler/komo_ir" }
 komo_lexer = { path = "compiler/komo_lexer" }
 komo_parser = { path = "compiler/komo_parser" }
 komo_runtime = { path = "runtime/komo_runtime" }
 komo_sema = { path = "compiler/komo_sema" }
+
