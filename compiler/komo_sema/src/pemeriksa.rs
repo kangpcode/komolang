@@ -691,19 +691,10 @@ impl PemeriksaSemantik {
                         if t_kiri == SemTipe::Teks && t_kanan == SemTipe::Teks {
                             SemTipe::Teks
                         } else if t_kiri.adalah_angka() && t_kanan.adalah_angka() {
-                            if t_kiri.cocok_dengan(&t_kanan) {
-                                t_kiri
+                            if t_kiri.adalah_desimal() || t_kanan.adalah_desimal() {
+                                SemTipe::Desimal
                             } else {
-                                self.lapor(Diagnostik::galat(
-                                    kode::TIPE_TIDAK_COCOK,
-                                    format!(
-                                        "operasi '+' memerlukan tipe angka yang setara, ditemukan '{}' dan '{}'",
-                                        t_kiri.nama(),
-                                        t_kanan.nama()
-                                    ),
-                                    e.rentang,
-                                ));
-                                SemTipe::Galat
+                                t_kiri
                             }
                         } else {
                             self.lapor(Diagnostik::galat(
@@ -719,7 +710,11 @@ impl PemeriksaSemantik {
                     | OperatorBiner::Bagi
                     | OperatorBiner::Sisa => {
                         if t_kiri.adalah_angka() && t_kanan.adalah_angka() {
-                            t_kiri
+                            if t_kiri.adalah_desimal() || t_kanan.adalah_desimal() {
+                                SemTipe::Desimal
+                            } else {
+                                t_kiri
+                            }
                         } else {
                             self.lapor(Diagnostik::galat(
                                 kode::OPERATOR_TIDAK_DIDUKUNG,
@@ -730,7 +725,12 @@ impl PemeriksaSemantik {
                         }
                     }
                     OperatorBiner::Sama | OperatorBiner::TidakSama => {
-                        if !t_kiri.cocok_dengan(&t_kanan) {
+                        let cocok = if t_kiri.adalah_angka() && t_kanan.adalah_angka() {
+                            true
+                        } else {
+                            t_kiri.cocok_dengan(&t_kanan) || t_kanan.cocok_dengan(&t_kiri)
+                        };
+                        if !cocok {
                             self.lapor(Diagnostik::galat(
                                 kode::TIPE_TIDAK_COCOK,
                                 format!("perbandingan kesetaraan memerlukan tipe yang cocok, ditemukan '{}' dan '{}'", t_kiri.nama(), t_kanan.nama()),

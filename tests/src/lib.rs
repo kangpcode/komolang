@@ -12,6 +12,10 @@ mod tes_pengurai_galat;
 mod tes_pengurai_valid;
 #[cfg(test)]
 mod tes_pretty_printer;
+#[cfg(test)]
+mod tes_semantik_galat;
+#[cfg(test)]
+mod tes_semantik_valid;
 
 #[cfg(test)]
 mod tests {
@@ -44,6 +48,14 @@ mod tests {
                 "Penguraian berkas {:?} gagal:\n{}",
                 jalur,
                 render_semua(&hasil.diagnostik, nama_berkas, &kode)
+            );
+
+            let hasil_sema = komo_sema::periksa(&hasil.berkas);
+            assert!(
+                hasil_sema.berhasil(),
+                "Analisis semantik berkas {:?} gagal:\n{}",
+                jalur,
+                render_semua(&hasil_sema.diagnostik, nama_berkas, &kode)
             );
 
             assert_eq!(hasil.berkas.paket.nama.nama, "utama");
