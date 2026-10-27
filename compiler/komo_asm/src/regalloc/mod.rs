@@ -4,4 +4,7 @@
 
 pub mod linear_scan;
 
-pub use linear_scan::{alokasikan_register_linear_scan, HasilAlokasiRegister, LokasiNilai, RentangHidup};
+pub use linear_scan::{
+    alokasikan_register_linear_scan, hitung_rentang_hidup, HasilAlokasiRegister, LokasiNilai,
+    RentangHidup,
+};

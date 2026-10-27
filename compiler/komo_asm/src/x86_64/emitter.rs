@@ -348,8 +348,8 @@ fn emit_fungsi_x86_64(out: &mut String, f: &FungsiIr, label_string: &HashMap<Str
                     let nama_panggil = match fungsi.as_str() {
                         "cetak.baris" | "std/cetak.baris" => "komo_std_cetak_baris",
                         "cetak.teks" | "std/cetak.teks" => "komo_std_cetak_teks",
-                        "cetak.bulat" => "komo_std_cetak_bulat",
-                        "cetak.desimal" => "komo_std_cetak_desimal",
+                        "cetak.bulat" | "std/cetak.bulat" => "komo_std_cetak_bulat",
+                        "cetak.desimal" | "std/cetak.desimal" => "komo_std_cetak_desimal",
                         lain => lain,
                     };
 

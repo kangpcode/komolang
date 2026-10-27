@@ -24,7 +24,8 @@ pub use format::{
     ArsitekturMachO, SimbolElf,
 };
 pub use regalloc::{
-    alokasikan_register_linear_scan, HasilAlokasiRegister, LokasiNilai, RentangHidup,
+    alokasikan_register_linear_scan, hitung_rentang_hidup, HasilAlokasiRegister, LokasiNilai,
+    RentangHidup,
 };
 pub use x86_64::emit_x86_64;
 
