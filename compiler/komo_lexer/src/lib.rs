@@ -268,17 +268,17 @@ pub fn pindai(sumber: &str) -> HasilPindai {
     }
 }
 
-struct Pemindai<'a> {
-    sumber: &'a str,
-    pos: usize,
-    akhir: usize,
-    baris: usize,
-    kolom: usize,
-    diagnostik: Vec<Diagnostik>,
+pub struct Pemindai<'a> {
+    pub sumber: &'a str,
+    pub pos: usize,
+    pub akhir: usize,
+    pub baris: usize,
+    pub kolom: usize,
+    pub diagnostik: Vec<Diagnostik>,
 }
 
 impl<'a> Pemindai<'a> {
-    fn baru(sumber: &'a str) -> Self {
+    pub fn baru(sumber: &'a str) -> Self {
         Self {
             sumber,
             pos: 0,
@@ -286,6 +286,25 @@ impl<'a> Pemindai<'a> {
             baris: 1,
             kolom: 1,
             diagnostik: Vec::new(),
+        }
+    }
+
+    pub fn pindai_semua(&mut self) -> Result<Vec<Token>, String> {
+        let mut token = self.pindai_deret();
+        token.push(Token {
+            jenis: JenisToken::AkhirBerkas,
+            rentang: Rentang::baru(self.pos, self.pos, self.baris, self.kolom),
+            baris_baru_sebelum: true,
+        });
+        if self.diagnostik.is_empty() {
+            Ok(token)
+        } else {
+            Err(self
+                .diagnostik
+                .iter()
+                .map(|d| d.to_string())
+                .collect::<Vec<_>>()
+                .join("\n"))
         }
     }
 

@@ -4,8 +4,8 @@ use std::env;
 use std::fs;
 use std::process;
 
-use komo_lexer::Pemindai;
-use komo_parser::Pengurai;
+use komo_diag::render_semua;
+use komo_parser::urai;
 
 const VERSI: &str = env!("CARGO_PKG_VERSION");
 const HAK_CIPTA: &str =
@@ -73,29 +73,20 @@ fn periksa_berkas(jalur: &str) {
 
     println!("Memeriksa berkas '{}'...", jalur);
 
-    let mut pemindai = Pemindai::baru(&konten);
-    let tokens = match pemindai.pindai_semua() {
-        Ok(t) => t,
-        Err(e) => {
-            eprintln!("❌ Kesalahan Leksikal: {}", e);
-            process::exit(1);
-        }
-    };
-
-    let mut pengurai = Pengurai::baru(tokens);
-    match pengurai.urai_berkas() {
-        Ok(program) => {
-            println!(
-                "✅ Sintaks valid! Paket: '{}', Impor: {}, Deklarasi: {}",
-                program.paket.nama.nama,
-                program.impor.len(),
-                program.deklarasi.len()
-            );
-        }
-        Err(e) => {
-            eprintln!("❌ Kesalahan Sintaks: {}", e);
-            process::exit(1);
-        }
+    let hasil = urai(&konten);
+    if hasil.berhasil() {
+        println!(
+            "✅ Sintaks valid! Paket: '{}', Impor: {}, Deklarasi: {}",
+            hasil.berkas.paket.nama.nama,
+            hasil.berkas.impor.len(),
+            hasil.berkas.deklarasi.len()
+        );
+    } else {
+        eprintln!(
+            "{}",
+            render_semua(&hasil.diagnostik, jalur, &konten)
+        );
+        process::exit(1);
     }
 }
 

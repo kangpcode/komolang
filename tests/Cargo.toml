@@ -8,6 +8,7 @@ description = "Conformance and integration test suite for Komolang"
 
 [dependencies]
 komo_ast = { workspace = true }
+komo_diag = { workspace = true }
 komo_lexer = { workspace = true }
 komo_parser = { workspace = true }
 komo_runtime = { workspace = true }

@@ -333,6 +333,10 @@ impl Pengurai {
                 self.maju();
                 Ok(Pengenal::baru(n.clone(), t.rentang))
             }
+            JenisToken::Saluran => {
+                self.maju();
+                Ok(Pengenal::baru("saluran", t.rentang))
+            }
             j => {
                 let mut d = Diagnostik::galat(
                     kode::DIHARAPKAN_NAMA,
@@ -1745,14 +1749,7 @@ impl Pengurai {
                         return self.selesaikan_panggilan_generik(id, argumen_tipe);
                     }
                 }
-                self.galat(
-                    Diagnostik::galat(
-                        kode::SALURAN_TANPA_TIPE,
-                        "'saluran' adalah tipe dan tidak dapat dipakai sebagai nilai",
-                        t.rentang,
-                    )
-                    .dengan_saran("buat saluran dengan saluran<bulat>(kapasitas)"),
-                )
+                self.urai_setelah_pengenal(id)
             }
             JenisToken::KurungBuka => {
                 self.maju();

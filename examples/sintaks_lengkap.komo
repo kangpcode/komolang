@@ -1,0 +1,70 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+paket utama
+
+impor "std/cetak"
+impor "std/web"
+
+// konstanta dan variabel
+konst PI = 3.14159
+biar nama = "Komodo"        // tidak bisa diubah
+var hitung = 0               // bisa diubah
+
+// tipe data
+tipe Pengguna struktur {
+    id: bulat
+    nama: teks
+    umur: bulat
+}
+
+// metode
+fungsi (p: Pengguna) sapa() teks {
+    kembali "Halo, {p.nama}!"
+}
+
+// error eksplisit
+fungsi bagi(a: desimal, b: desimal) hasil<desimal, teks> {
+    jika b == 0 {
+        kembali gagal("tidak bisa dibagi nol")
+    }
+    kembali sukses(a / b)
+}
+
+// antarmuka
+tipe Hewan antarmuka {
+    suara() teks
+}
+
+// konkurensi
+fungsi kerja(saluran: saluran<bulat>) {
+    saluran.kirim(42)
+}
+
+fungsi utama() {
+    biar u = Pengguna{id: 1, nama: "Budi", umur: 20}
+    cetak.baris(u.sapa())
+
+    untuk i dalam 0..5 {
+        cetak.baris("i = {i}")
+    }
+
+    selagi hitung < 3 {
+        hitung += 1
+    }
+
+    pilih hitung {
+        kasus 3: cetak.baris("tiga")
+        lainnya: cetak.baris("lain")
+    }
+
+    cocok bagi(10, 2) {
+        sukses(n): cetak.baris("hasil {n}")
+        gagal(e):  cetak.baris("error: {e}")
+    }
+
+    biar s = saluran<bulat>(1)
+    jalankan kerja(s)            // task ringan
+    cetak.baris(s.terima())
+
+    tunda cetak.baris("selesai") // dijalankan saat keluar fungsi
+}

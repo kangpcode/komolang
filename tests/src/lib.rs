@@ -4,8 +4,8 @@
 
 #[cfg(test)]
 mod tests {
-    use komo_lexer::Pemindai;
-    use komo_parser::Pengurai;
+    use komo_diag::render_semua;
+    use komo_parser::urai;
     use komo_runtime::KonteksRuntime;
     use std::fs;
     use std::path::Path;
@@ -16,24 +16,26 @@ mod tests {
             .parent()
             .unwrap()
             .join("examples");
-        let berkas_contoh = vec!["halo_dunia.komo", "perhitungan.komo"];
+        let berkas_contoh = vec![
+            "halo_dunia.komo",
+            "perhitungan.komo",
+            "sintaks_lengkap.komo",
+        ];
 
         for nama_berkas in berkas_contoh {
             let jalur = contoh_dir.join(nama_berkas);
             assert!(jalur.exists(), "Berkas contoh {:?} harus ada", jalur);
 
             let kode = fs::read_to_string(&jalur).expect("Harus dapat membaca berkas contoh");
-            let mut pemindai = Pemindai::baru(&kode);
-            let tokens = pemindai
-                .pindai_semua()
-                .expect("Pemindaian leksikal harus berhasil");
+            let hasil = urai(&kode);
+            assert!(
+                hasil.berhasil(),
+                "Penguraian berkas {:?} gagal:\n{}",
+                jalur,
+                render_semua(&hasil.diagnostik, nama_berkas, &kode)
+            );
 
-            let mut pengurai = Pengurai::baru(tokens);
-            let ast = pengurai
-                .urai_berkas()
-                .expect("Penguraian AST harus berhasil");
-
-            assert_eq!(ast.paket.nama.nama, "utama");
+            assert_eq!(hasil.berkas.paket.nama.nama, "utama");
         }
     }
 
