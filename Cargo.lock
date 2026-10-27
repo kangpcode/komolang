@@ -26,6 +26,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "komo_ir"
+version = "0.1.0"
+dependencies = [
+ "komo_ast",
+ "komo_diag",
+ "komo_sema",
+]
+
+[[package]]
 name = "komo_lexer"
 version = "0.1.0"
 dependencies = [
