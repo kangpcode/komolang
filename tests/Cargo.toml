@@ -12,3 +12,4 @@ komo_diag = { workspace = true }
 komo_lexer = { workspace = true }
 komo_parser = { workspace = true }
 komo_runtime = { workspace = true }
+komo_sema = { workspace = true }
