@@ -306,6 +306,7 @@ dependencies = [
  "komo_ast",
  "komo_codegen",
  "komo_diag",
+ "komo_game",
  "komo_ir",
  "komo_lexer",
  "komo_parser",
@@ -350,6 +351,15 @@ name = "komo_diag"
 version = "0.1.0"
 dependencies = [
  "komo_ast",
+]
+
+[[package]]
+name = "komo_game"
+version = "0.1.0"
+dependencies = [
+ "komo_ast",
+ "komo_runtime",
+ "komo_ui",
 ]
 
 [[package]]
@@ -403,6 +413,7 @@ dependencies = [
  "komo_ast",
  "komo_codegen",
  "komo_diag",
+ "komo_game",
  "komo_ir",
  "komo_lexer",
  "komo_parser",

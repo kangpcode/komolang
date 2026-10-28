@@ -186,6 +186,21 @@ fn main() {
                 process::exit(1);
             }
         }
+        "main" => {
+            let apakah_3d = args.iter().any(|a| a == "--3d");
+            let mut frame = 60usize;
+            for arg in &args {
+                if arg.starts_with("--frame=") {
+                    if let Ok(f) = arg["--frame=".len()..].parse::<usize>() {
+                        frame = f;
+                    }
+                }
+            }
+            if let Err(e) = perintah::jalankan_game(apakah_3d, frame) {
+                eprintln!("❌ {}", e);
+                process::exit(1);
+            }
+        }
         "lsp" => {
             lsp::jalankan_server_lsp();
         }
@@ -329,6 +344,7 @@ fn tampilkan_bantuan() {
     println!("  repl                    Menjalankan sesi Read-Eval-Print Loop interaktif");
     println!("  debug <berkas.komo>     Inspeksi mendalam AST, tabel simbol semantik, dan KIR SSA");
     println!("  layani [jalur]          Menjalankan server web KomoWeb dengan hot reload (--port=8080)");
+    println!("  main [--3d] [--frame=N] Menjalankan simulasi engine KomoGame 2D / 3D pada 60 FPS");
     println!("  lsp                     Menjalankan server Language Server Protocol (stdin/stdout)");
     println!();
     println!("Perintah Kompilasi & Eksekusi:");

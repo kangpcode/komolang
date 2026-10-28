@@ -1,0 +1,14 @@
+# Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+[package]
+name = "komo_game"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Game Engine and Multimedia Framework for Komolang (ECS, 2D/3D Renderer, Audio, Physics)"
+
+[dependencies]
+komo_ast = { workspace = true }
+komo_runtime = { workspace = true }
+komo_ui = { workspace = true }

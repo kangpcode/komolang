@@ -38,6 +38,8 @@ mod tes_paket_registry;
 mod tes_web_framework;
 #[cfg(test)]
 mod tes_ui_interop;
+#[cfg(test)]
+mod tes_game_engine;
 
 #[cfg(test)]
 mod tests {

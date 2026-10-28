@@ -8,6 +8,7 @@ pub mod debug;
 pub mod dok;
 pub mod format;
 pub mod layani;
+pub mod main_game;
 pub mod paket;
 pub mod repl;
 pub mod uji;
@@ -18,6 +19,7 @@ pub use debug::debug_berkas;
 pub use dok::buat_dokumentasi;
 pub use format::format_kode;
 pub use layani::jalankan_server_layani;
+pub use main_game::jalankan_game;
 pub use paket::{
     bersihkan_target, cari_paket, instal_dependensi, perbarui_dependensi, rilis_aplikasi,
     tambah_dependensi, terbitkan_paket,

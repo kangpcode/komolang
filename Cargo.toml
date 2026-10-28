@@ -15,6 +15,7 @@ members = [
     "pkg/komo_pkg",
     "web/komo_web",
     "ui/komo_ui",
+    "game/komo_game",
     "tests",
 ]
 resolver = "2"
@@ -40,5 +41,6 @@ komo = { path = "cli" }
 komo_pkg = { path = "pkg/komo_pkg" }
 komo_web = { path = "web/komo_web" }
 komo_ui = { path = "ui/komo_ui" }
+komo_game = { path = "game/komo_game" }
 
 

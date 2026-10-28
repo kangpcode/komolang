@@ -252,10 +252,10 @@ fungsi utama() {
 
 ### Tahap 11 — KomoGame
 
-- [ ] Loop game, input, audio, 2D renderer, sprite, tilemap, fisika dasar.
-- [ ] Renderer 3D dasar (Vulkan/Metal/DX12/WebGPU lewat lapisan abstraksi).
-- [ ] ECS (Entity Component System) berkinerja tinggi.
-- [ ] Contoh game 2D lengkap dan demo 3D; profiler frame-time.
+- [x] Loop game, input, audio, 2D renderer, sprite, tilemap, fisika dasar.
+- [x] Renderer 3D dasar (Vulkan/Metal/DX12/WebGPU lewat lapisan abstraksi).
+- [x] ECS (Entity Component System) berkinerja tinggi.
+- [x] Contoh game 2D lengkap dan demo 3D; profiler frame-time.
 
 * **Selesai bila:** demo game stabil di 60 FPS pada perangkat acuan yang ditetapkan.
 

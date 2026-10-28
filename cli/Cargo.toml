@@ -27,3 +27,4 @@ komo_asm = { workspace = true }
 komo_pkg = { workspace = true }
 komo_web = { workspace = true }
 komo_ui = { workspace = true }
+komo_game = { workspace = true }
