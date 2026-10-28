@@ -1,0 +1,9 @@
+Package: komolang
+Version: 0.1.0
+Section: devel
+Priority: optional
+Architecture: amd64
+Maintainer: Dhafa Nazula Permadi <kangpcode@gmail.com>
+Description: Bahasa pemrograman kompilasi native berperforma tinggi asli Indonesia.
+ Komolang menggabungkan kecepatan eksekusi setara C/Rust dengan kemudahan
+ sintaks deklaratif berbahasa Indonesia yang elegan.

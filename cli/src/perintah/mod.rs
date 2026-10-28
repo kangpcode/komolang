@@ -5,6 +5,7 @@
 pub mod baru;
 pub mod bench;
 pub mod debug;
+pub mod distribusi;
 pub mod dok;
 pub mod format;
 pub mod layani;
@@ -16,6 +17,11 @@ pub mod uji;
 pub use baru::buat_proyek_baru;
 pub use bench::jalankan_benchmark;
 pub use debug::debug_berkas;
+pub use distribusi::{
+    bangun_berkas_lintas_platform, buat_debian_control, buat_formula_homebrew, buat_manifest_scoop,
+    buat_manifest_sha256sums, buat_manifest_winget, terapkan_pembaruan_biner, verifikasi_sha256sums,
+    InfoRilis, TargetPlatform,
+};
 pub use dok::buat_dokumentasi;
 pub use format::format_kode;
 pub use layani::jalankan_server_layani;

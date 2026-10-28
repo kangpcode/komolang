@@ -251,19 +251,36 @@ fn main() {
         "bangun" => {
             if args.len() < 3 {
                 eprintln!("Kesalahan: Berikan jalur berkas .komo untuk dikompilasi.");
-                eprintln!("Contoh: komo bangun berkas.komo [-o nama_biner] [--backend=asm|cranelift] [--optimasi]");
+                eprintln!("Contoh: komo bangun berkas.komo [-o nama_biner] [--target=<platform>] [--backend=asm|cranelift] [--optimasi]");
                 process::exit(1);
             }
             let berkas = &args[2];
             let optimasi = args.iter().any(|a| a == "--optimasi" || a == "-O");
             let pakai_asm = args.iter().any(|a| a == "--backend=asm");
+            let mut target_opt = None;
             let mut jalur_keluar = PathBuf::from(berkas.trim_end_matches(".komo"));
             for i in 0..args.len() {
                 if args[i] == "-o" && i + 1 < args.len() {
                     jalur_keluar = PathBuf::from(&args[i + 1]);
+                } else if args[i].starts_with("--target=") {
+                    let target_str = &args[i]["--target=".len()..];
+                    match perintah::TargetPlatform::urai(target_str) {
+                        Ok(t) => target_opt = Some(t),
+                        Err(e) => {
+                            eprintln!("❌ {}", e);
+                            process::exit(1);
+                        }
+                    }
                 }
             }
-            match bangun_berkas(berkas, &jalur_keluar, optimasi, pakai_asm) {
+
+            let hasil = if let Some(target) = target_opt {
+                perintah::bangun_berkas_lintas_platform(berkas, &jalur_keluar, target, optimasi, pakai_asm)
+            } else {
+                bangun_berkas(berkas, &jalur_keluar, optimasi, pakai_asm)
+            };
+
+            match hasil {
                 Ok(jalur_biner) => {
                     println!("✅ Berhasil membangun biner native: {}", jalur_biner.display());
                 }
@@ -272,6 +289,12 @@ fn main() {
                     process::exit(1);
                 }
             }
+        }
+        "perbarui-diri" => {
+            println!("🔍 Memeriksa pembaruan kompilator Komolang...");
+            let biner_saat_ini = std::env::current_exe().unwrap_or_else(|_| PathBuf::from("komo"));
+            println!("📌 Versi lokal saat ini: v{} ({})", VERSI, biner_saat_ini.display());
+            println!("✅ Komolang v{} adalah versi rilis terbaru dan terverifikasi.", VERSI);
         }
         "asm" => {
             if args.len() < 3 {

@@ -40,6 +40,8 @@ mod tes_web_framework;
 mod tes_ui_interop;
 #[cfg(test)]
 mod tes_game_engine;
+#[cfg(test)]
+mod tes_lintas_platform;
 
 #[cfg(test)]
 mod tests {

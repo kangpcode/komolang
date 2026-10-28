@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.singleton.1.6.0.schema.json
+PackageIdentifier: kangpcode.komolang
+PackageVersion: 0.1.0
+PackageName: Komolang
+Publisher: Dhafa Nazula Permadi (kangpcode)
+License: MIT
+ShortDescription: Kompilator bahasa pemrograman modern berbasis performa tinggi asli Indonesia
+Installers:
+  - Architecture: x64
+    InstallerType: zip
+    InstallerUrl: https://github.com/kangpcode/komolang/releases/download/v0.1.0/komolang-v0.1.0-x86_64-pc-windows-msvc.zip
+    InstallerSha256: 0000000000000000000000000000000000000000000000000000000000000000
+    NestedInstallerType: portable
+    NestedInstallerFiles:
+      - RelativeFilePath: komo.exe
+        PortableCommandAlias: komo
+ManifestType: singleton
+ManifestVersion: 1.6.0

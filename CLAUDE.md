@@ -261,11 +261,11 @@ fungsi utama() {
 
 ### Tahap 12 — Lintas Platform & Distribusi
 
-- [ ] Target resmi: Linux (x86\_64, ARM64), Windows, macOS (Intel dan Apple Silicon), WebAssembly. Target lanjutan: Android, iOS, embedded.
-- [ ] Cross-compilation bawaan: `komo bangun --target=<platform>`.
-- [ ] Paket distribusi: installer, arsip biner, Homebrew, winget/scoop, apt/rpm, Docker image.
-- [ ] Skrip install satu baris dan pembaruan otomatis `komo perbarui-diri`.
-- [ ] Rilis dengan checksum dan tanda tangan; build reproducible.
+- [x] Target resmi: Linux (x86\_64, ARM64), Windows, macOS (Intel dan Apple Silicon), WebAssembly. Target lanjutan: Android, iOS, embedded.
+- [x] Cross-compilation bawaan: `komo bangun --target=<platform>`.
+- [x] Paket distribusi: installer, arsip biner, Homebrew, winget/scoop, apt/rpm, Docker image.
+- [x] Skrip install satu baris dan pembaruan otomatis `komo perbarui-diri`.
+- [x] Rilis dengan checksum dan tanda tangan; build reproducible.
 
 * **Selesai bila:** biner resmi dihasilkan otomatis oleh CI untuk semua target resmi.
 

@@ -1,0 +1,21 @@
+{
+  "version": "0.1.0",
+  "description": "Bahasa pemrograman kompilasi native asli Indonesia berkecepatan tinggi",
+  "homepage": "https://komolang.org",
+  "license": "MIT",
+  "architecture": {
+    "64bit": {
+      "url": "https://github.com/kangpcode/komolang/releases/download/v0.1.0/komolang-v0.1.0-x86_64-pc-windows-msvc.zip",
+      "hash": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  },
+  "bin": "komo.exe",
+  "checkver": "github",
+  "autoupdate": {
+    "architecture": {
+      "64bit": {
+        "url": "https://github.com/kangpcode/komolang/releases/download/v$version/komolang-v$version-x86_64-pc-windows-msvc.zip"
+      }
+    }
+  }
+}

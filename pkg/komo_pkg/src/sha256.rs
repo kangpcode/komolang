@@ -117,6 +117,8 @@ pub fn sha256_hex(pesan: &[u8]) -> String {
     hex
 }
 
+pub use sha256_hex as hitung_sha256;
+
 #[cfg(test)]
 mod tests {
     use super::*;
