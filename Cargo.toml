@@ -14,6 +14,7 @@ members = [
     "runtime/komo_runtime",
     "pkg/komo_pkg",
     "web/komo_web",
+    "ui/komo_ui",
     "tests",
 ]
 resolver = "2"
@@ -38,5 +39,6 @@ komo_sema = { path = "compiler/komo_sema" }
 komo = { path = "cli" }
 komo_pkg = { path = "pkg/komo_pkg" }
 komo_web = { path = "web/komo_web" }
+komo_ui = { path = "ui/komo_ui" }
 
 

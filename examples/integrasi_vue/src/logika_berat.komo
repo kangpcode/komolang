@@ -1,0 +1,46 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Logika komputasi berkinerja tinggi dalam Komolang untuk dijalankan via WebAssembly di browser.
+
+paket logika_komolang
+
+/// Menghitung bilangan Fibonacci ke-n secara iteratif berkecepatan native.
+publik fungsi hitung_deret_fibonacci(n: bulat) bulat {
+    jika n <= 0 {
+        kembali 0
+    }
+    jika n == 1 {
+        kembali 1
+    }
+
+    var a = 0
+    var b = 1
+    untuk _ dalam 2..=n {
+        biar c = a + b
+        a = b
+        b = c
+    }
+    kembali b
+}
+
+/// Memeriksa apakah sebuah bilangan bulat adalah bilangan prima.
+publik fungsi cek_apakah_prima(n: bulat) bool {
+    jika n <= 1 {
+        kembali salah
+    }
+    jika n <= 3 {
+        kembali benar
+    }
+    jika (n % 2 == 0) atau (n % 3 == 0) {
+        kembali salah
+    }
+
+    var i = 5
+    selagi i * i <= n {
+        jika (n % i == 0) atau (n % (i + 2) == 0) {
+            kembali salah
+        }
+        i += 6
+    }
+    kembali benar
+}

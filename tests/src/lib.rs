@@ -36,6 +36,8 @@ mod tes_cli_tooling;
 mod tes_paket_registry;
 #[cfg(test)]
 mod tes_web_framework;
+#[cfg(test)]
+mod tes_ui_interop;
 
 #[cfg(test)]
 mod tests {

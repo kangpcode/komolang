@@ -243,10 +243,10 @@ fungsi utama() {
 
 ### Tahap 10 — KomoUI & Interop Framework
 
-- [ ] **KomoUI:** toolkit UI deklaratif (komponen, state reaktif, layout, tema) untuk desktop dan web (via WASM).
-- [ ] Rendering lintas platform (GPU dengan fallback software).
-- [ ] **Interop JS/WASM:** target `wasm32`, binding otomatis, sehingga Komolang bisa dipakai di **Vue.js, React**, dan framework lain sebagai modul WASM.
-- [ ] Contoh integrasi Vue.js (UI Vue + logika berat di Komolang).
+- [x] **KomoUI:** toolkit UI deklaratif (komponen, state reaktif, layout, tema) untuk desktop dan web (via WASM).
+- [x] Rendering lintas platform (GPU dengan fallback software).
+- [x] **Interop JS/WASM:** target `wasm32`, binding otomatis, sehingga Komolang bisa dipakai di **Vue.js, React**, dan framework lain sebagai modul WASM.
+- [x] Contoh integrasi Vue.js (UI Vue + logika berat di Komolang).
 
 * **Selesai bila:** aplikasi KomoUI dan integrasi Vue.js contoh berjalan di browser dan desktop.
 
