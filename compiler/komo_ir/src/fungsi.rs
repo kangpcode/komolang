@@ -99,4 +99,21 @@ impl FungsiIr {
         }
         pendahulu
     }
+
+    /// Mengambil tipe nilai SSA dari parameter atau instruksi penghasilnya.
+    pub fn ambil_tipe_nilai(&self, id: IdNilai) -> Option<IrTipe> {
+        for p in &self.parameter {
+            if p.nilai == id {
+                return Some(p.tipe.clone());
+            }
+        }
+        for b in &self.blok {
+            for (hasil_opt, inst) in &b.instruksi {
+                if *hasil_opt == Some(id) {
+                    return inst.tipe_hasil();
+                }
+            }
+        }
+        None
+    }
 }

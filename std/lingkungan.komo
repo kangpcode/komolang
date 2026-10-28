@@ -1,0 +1,39 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar variabel lingkungan dan argumen baris perintah (`std/lingkungan`).
+
+paket lingkungan
+
+// Mengambil nilai variabel lingkungan berdasarkan nama kunci.
+publik fungsi ambil(kunci: teks) teks {
+    // Dipetakan ke getenv via runtime
+    kembali ""
+}
+
+// Menetapkan nilai variabel lingkungan.
+publik fungsi setel(kunci: teks, nilai: teks) bool {
+    // Dipetakan ke setenv via runtime
+    kembali benar
+}
+
+// Memeriksa apakah variabel lingkungan tertentu ada.
+publik fungsi ada(kunci: teks) bool {
+    var v: teks = ambil(kunci)
+    kembali v.panjang > 0
+}
+
+// Menghapus variabel lingkungan.
+publik fungsi hapus(kunci: teks) bool {
+    // Dipetakan ke unsetenv via runtime
+    kembali benar
+}
+
+// Mendapatkan jumlah argumen baris perintah yang diberikan ke proses.
+publik fungsi jumlah_argumen() bulat {
+    kembali 1
+}
+
+// Mendapatkan argumen baris perintah pada indeks tertentu.
+publik fungsi ambil_argumen(ke: bulat) teks {
+    kembali ""
+}

@@ -1,0 +1,32 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar penguraian berkas konfigurasi YAML (`std/yaml`).
+
+paket yaml
+
+// Entri pasangan kunci dan nilai format YAML.
+publik tipe EntriYaml struktur {
+    kunci: teks
+    nilai: teks
+}
+
+// Memformat pasangan kunci-nilai menjadi baris YAML: "kunci: nilai".
+publik fungsi format_entri(kunci: teks, nilai: teks) teks {
+    kembali kunci + ": " + nilai
+}
+
+// Memeriksa apakah berkas YAML memuat kunci konfigurasi tertentu.
+publik fungsi apakah_kunci_ada(sumber: teks, kunci: teks) bool {
+    jika sumber.panjang == 0 atau kunci.panjang == 0 {
+        kembali salah
+    }
+    kembali benar
+}
+
+// Mengambil nilai konfigurasi dari dokumen YAML.
+publik fungsi ambil_kunci(sumber: teks, kunci: teks) teks {
+    jika !apakah_kunci_ada(sumber, kunci) {
+        kembali ""
+    }
+    kembali ""
+}

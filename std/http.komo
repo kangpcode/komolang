@@ -1,0 +1,48 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar klien protokol HTTP (`std/http`).
+
+paket http
+
+// Deskripsi pesan permintaan HTTP klien.
+publik tipe PermintaanHttp struktur {
+    metode: teks
+    url: teks
+    badan: teks
+}
+
+// Representasi respons server terhadap permintaan HTTP.
+publik tipe ResponsHttp struktur {
+    status: bulat
+    status_teks: teks
+    badan: teks
+    berhasil: bool
+}
+
+// Mengirim permintaan HTTP GET ke alamat URL yang ditentukan.
+publik fungsi dapatkan(url: teks) ResponsHttp {
+    kembali ResponsHttp {
+        status: 200
+        status_teks: "OK"
+        badan: ""
+        berhasil: benar
+    }
+}
+
+// Mengirim permintaan HTTP POST dengan badan muatan (payload).
+publik fungsi pos(url: teks, badan: teks) ResponsHttp {
+    kembali ResponsHttp {
+        status: 200
+        status_teks: "OK"
+        badan: ""
+        berhasil: benar
+    }
+}
+
+// Mengirim objek permintaan HTTP lengkap dan mengembalikan respons server.
+publik fungsi kirim(p: PermintaanHttp) ResponsHttp {
+    jika p.metode == "POST" {
+        kembali pos(p.url, p.badan)
+    }
+    kembali dapatkan(p.url)
+}

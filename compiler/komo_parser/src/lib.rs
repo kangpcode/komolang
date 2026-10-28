@@ -743,6 +743,7 @@ impl Pengurai {
         let awal = self.harap(JenisToken::Tipe, "untuk memulai deklarasi tipe")?;
         let nama = self.harap_pengenal("tipe")?;
         let generik = self.urai_generik_opsional()?;
+        let _ = self.cocok(&JenisToken::SamaDengan);
         let isi = match self.sekarang().jenis {
             JenisToken::Struktur => {
                 self.maju();
@@ -947,13 +948,31 @@ impl Pengurai {
                     rentang,
                 ))
             }
+            JenisToken::KurungSikuBuka => {
+                self.maju();
+                let elemen = self.urai_tipe_data()?;
+                let tutup = self.harap(JenisToken::KurungSikuTutup, "untuk menutup tipe larik ']'")?;
+                let rentang = t.rentang.gabung(tutup.rentang);
+                Ok(Tipe::baru(
+                    JenisTipe::Nama {
+                        nama: Pengenal::baru("larik".to_string(), t.rentang),
+                        argumen: vec![elemen],
+                    },
+                    rentang,
+                ))
+            }
             JenisToken::Pengenal(_) | JenisToken::Saluran => {
                 self.maju();
-                let nama = match &t.jenis {
+                let mut nama_gabung = match &t.jenis {
                     JenisToken::Pengenal(n) => n.clone(),
                     _ => "saluran".to_string(),
                 };
-                let nama = Pengenal::baru(nama, t.rentang);
+                while self.cocok(&JenisToken::Titik) {
+                    let sub = self.harap_pengenal("nama tipe setelah '.'")?;
+                    nama_gabung.push('.');
+                    nama_gabung.push_str(&sub.nama);
+                }
+                let nama = Pengenal::baru(nama_gabung, self.rentang_sejak(t.rentang));
                 let mut argumen = Vec::new();
                 if self.cocok(&JenisToken::KurangDari) {
                     loop {
@@ -1849,13 +1868,15 @@ impl Pengurai {
         let (bidang, tutup) = self.dengan_konteks_bebas(|p| {
             let mut v = Vec::new();
             while !p.cek(&JenisToken::KurungKurawalTutup) && !p.adalah_akhir() {
+                while p.cocok(&JenisToken::Koma) {}
+                if p.cek(&JenisToken::KurungKurawalTutup) || p.adalah_akhir() {
+                    break;
+                }
                 let n = p.harap_pengenal("bidang")?;
                 p.harap(JenisToken::TitikDua, "setelah nama bidang")?;
                 let nilai = p.urai_ekspresi()?;
                 v.push(BidangInisialisasi { nama: n, nilai });
-                if !p.cocok(&JenisToken::Koma) {
-                    break;
-                }
+                let _ = p.cocok(&JenisToken::Koma);
             }
             let tutup = p.harap(
                 JenisToken::KurungKurawalTutup,

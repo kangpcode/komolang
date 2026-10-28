@@ -1,13 +1,30 @@
 // Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
 
+//! Pustaka standar operasi masukan/keluaran konsol terminal (`std/cetak`).
+
 paket cetak
 
-// Mencetak teks ke keluaran standar tanpa baris baru.
-publik fungsi teks(pesan: teks) {
-    // Implementasi FFI runtime
+// Mencetak teks ke keluaran standar (stdout) tanpa baris baru.
+publik fungsi tulis(pesan: teks) {
+    // Dihubungkan ke komo_std_cetak_teks via runtime C-ABI
 }
 
-// Mencetak teks ke keluaran standar diakhiri baris baru.
+// Mencetak teks ke keluaran standar (stdout) diakhiri baris baru.
 publik fungsi baris(pesan: teks) {
-    // Implementasi FFI runtime
+    // Dihubungkan ke komo_std_cetak_baris via runtime C-ABI
+}
+
+// Mencetak bilangan bulat (i64) ke keluaran standar diakhiri baris baru.
+publik fungsi tulis_bulat(nilai: bulat) {
+    // Dihubungkan ke komo_std_cetak_bulat via runtime C-ABI
+}
+
+// Mencetak bilangan desimal (f64) ke keluaran standar diakhiri baris baru.
+publik fungsi tulis_desimal(nilai: desimal) {
+    // Dihubungkan ke komo_std_cetak_desimal via runtime C-ABI
+}
+
+// Mencetak pesan kesalahan ke keluaran kesalahan standar (stderr).
+publik fungsi kesalahan(pesan: teks) {
+    // Dihubungkan ke komo_std_cetak_kesalahan via runtime C-ABI
 }

@@ -912,34 +912,36 @@ impl PemeriksaSemantik {
                             parameter,
                             kembalian,
                         } => {
-                            if parameter.len() != tipe_argumen.len() {
+                            let variadik = parameter.len() == 1
+                                && matches!(&parameter[0], SemTipe::Generik(g) if g == "*");
+                            if !variadik && parameter.len() != tipe_argumen.len() {
                                 self.lapor(
                                     Diagnostik::galat(
                                         kode::JUMLAH_ARGUMEN_SALAH,
                                         format!(
-                                        "pemanggilan memerlukan {} argumen, tetapi diberikan {}",
-                                        parameter.len(),
-                                        tipe_argumen.len()
-                                    ),
+                                            "pemanggilan memerlukan {} argumen, tetapi diberikan {}",
+                                            parameter.len(),
+                                            tipe_argumen.len()
+                                        ),
                                         e.rentang,
                                     )
                                     .dengan_saran("periksa daftar parameter fungsi yang dipanggil"),
                                 );
-                            } else {
+                            } else if !variadik {
                                 for (p_tipe, a_tipe) in parameter.iter().zip(tipe_argumen.iter()) {
                                     if !a_tipe.cocok_dengan(p_tipe) {
                                         self.lapor(
-                                        Diagnostik::galat(
-                                            kode::TIPE_TIDAK_COCOK,
-                                            format!(
-                                                "tipe argumen tidak cocok: diharapkan '{}', tetapi diberikan '{}'",
-                                                p_tipe.nama(),
-                                                a_tipe.nama()
-                                            ),
-                                            e.rentang,
-                                        )
-                                        .dengan_saran("sesuaikan tipe argumen yang dioper"),
-                                    );
+                                            Diagnostik::galat(
+                                                kode::TIPE_TIDAK_COCOK,
+                                                format!(
+                                                    "tipe argumen tidak cocok: diharapkan '{}', tetapi diberikan '{}'",
+                                                    p_tipe.nama(),
+                                                    a_tipe.nama()
+                                                ),
+                                                e.rentang,
+                                            )
+                                            .dengan_saran("sesuaikan tipe argumen yang dioper"),
+                                        );
                                     }
                                 }
                             }
@@ -966,96 +968,96 @@ impl PemeriksaSemantik {
                 }
             }
             JenisEkspresi::Bidang { objek, nama } => {
-                // Cek apakah ini pemanggilan modul std (seperti `cetak.baris`)
-                if let JenisEkspresi::Pengenal(id) = &objek.jenis {
+                // Cek apakah ini pemanggilan modul std (seperti `cetak.baris` atau `matematika.maks`)
+                let adalah_modul = if let JenisEkspresi::Pengenal(id) = &objek.jenis {
                     if let Some(s) = self.tabel.cari_simbol(&id.nama) {
-                        if let JenisSimbol::Modul { .. } = &s.jenis {
-                            // Fungsi pustaka modul bawaan (misal cetak.baris)
-                            return SemTipe::Fungsi {
-                                parameter: vec![SemTipe::Generik("T".into())],
-                                kembalian: Box::new(SemTipe::Kosong),
-                            };
-                        }
+                        matches!(&s.jenis, JenisSimbol::Modul { .. })
+                    } else {
+                        false
                     }
-                }
-
-                let t_objek = self.evaluasi_ekspresi(objek);
-                let tipe_inti = match &t_objek {
-                    SemTipe::Pinjam { dalam, .. } => *dalam.clone(),
-                    lain => lain.clone(),
+                } else {
+                    false
                 };
 
-                // Cek metode bawaan saluran (`kirim`, `terima`, `tutup`)
-                if let SemTipe::Saluran(dalam) = &tipe_inti {
-                    match nama.nama.as_str() {
-                        "kirim" => {
-                            return SemTipe::Fungsi {
+                if adalah_modul {
+                    SemTipe::Fungsi {
+                        parameter: vec![SemTipe::Generik("*".into())],
+                        kembalian: Box::new(SemTipe::Generik("T".into())),
+                    }
+                } else {
+                    let t_objek = self.evaluasi_ekspresi(objek);
+                    let tipe_inti = match &t_objek {
+                        SemTipe::Pinjam { dalam, .. } => *dalam.clone(),
+                        lain => lain.clone(),
+                    };
+
+                    // Cek tipe generik / kustom modul lain
+                    if let SemTipe::Generik(_) = &tipe_inti {
+                        SemTipe::Generik("T".into())
+                    } else if matches!(&tipe_inti, SemTipe::Larik(_) | SemTipe::Teks) && nama.nama == "panjang" {
+                        SemTipe::Bulat
+                    } else if let SemTipe::Saluran(dalam) = &tipe_inti {
+                        match nama.nama.as_str() {
+                            "kirim" => SemTipe::Fungsi {
                                 parameter: vec![*dalam.clone()],
                                 kembalian: Box::new(SemTipe::Kosong),
-                            };
-                        }
-                        "terima" => {
-                            return SemTipe::Fungsi {
+                            },
+                            "terima" => SemTipe::Fungsi {
                                 parameter: vec![],
                                 kembalian: dalam.clone(),
-                            };
-                        }
-                        "tutup" => {
-                            return SemTipe::Fungsi {
+                            },
+                            "tutup" => SemTipe::Fungsi {
                                 parameter: vec![],
                                 kembalian: Box::new(SemTipe::Kosong),
-                            };
+                            },
+                            _ => SemTipe::Galat,
                         }
-                        _ => {}
-                    }
-                }
-
-                // Cek metode kustom yang terdaftar pada tipe ini: `{tipe}.{metode}`
-                let kunci_metode = format!("{}.{}", tipe_inti.nama(), nama.nama);
-                if let Some(simbol) = self.tabel.cari_simbol(&kunci_metode) {
-                    if let JenisSimbol::Metode { tipe, .. } = &simbol.jenis {
-                        return tipe.clone();
-                    }
-                }
-
-                // Cek bidang pada struktur
-                if let SemTipe::Struktur { bidang, .. } = &tipe_inti {
-                    if let Some((_, t_bidang, _)) = bidang.iter().find(|(b, _, _)| b == &nama.nama)
-                    {
-                        return t_bidang.clone();
                     } else {
-                        self.lapor(
-                            Diagnostik::galat(
-                                kode::BIDANG_TIDAK_DITEMUKAN,
-                                format!(
-                                    "struktur '{}' tidak memiliki bidang atau metode bernama '{}'",
-                                    tipe_inti.nama(),
-                                    nama.nama
-                                ),
-                                nama.rentang,
-                            )
-                            .dengan_saran("periksa penulisan nama bidang atau deklarasi struktur"),
-                        );
-                        return SemTipe::Galat;
+                        let kunci_metode = format!("{}.{}", tipe_inti.nama(), nama.nama);
+                        if let Some(simbol) = self.tabel.cari_simbol(&kunci_metode) {
+                            if let JenisSimbol::Metode { tipe, .. } = &simbol.jenis {
+                                tipe.clone()
+                            } else {
+                                SemTipe::Galat
+                            }
+                        } else if let SemTipe::Struktur { bidang, .. } = &tipe_inti {
+                            if let Some((_, t_bidang, _)) = bidang.iter().find(|(b, _, _)| b == &nama.nama) {
+                                t_bidang.clone()
+                            } else {
+                                self.lapor(
+                                    Diagnostik::galat(
+                                        kode::BIDANG_TIDAK_DITEMUKAN,
+                                        format!(
+                                            "struktur '{}' tidak memiliki bidang atau metode bernama '{}'",
+                                            tipe_inti.nama(),
+                                            nama.nama
+                                        ),
+                                        nama.rentang,
+                                    )
+                                    .dengan_saran("periksa penulisan nama bidang atau deklarasi struktur"),
+                                );
+                                SemTipe::Galat
+                            }
+                        } else {
+                            if tipe_inti != SemTipe::Galat {
+                                self.lapor(
+                                    Diagnostik::galat(
+                                        kode::BUKAN_STRUKTUR,
+                                        format!(
+                                            "tipe '{}' bukan struktur dan tidak memiliki bidang",
+                                            tipe_inti.nama()
+                                        ),
+                                        objek.rentang,
+                                    )
+                                    .dengan_saran(
+                                        "akses bidang '.' hanya berlaku untuk tipe struktur atau modul",
+                                    ),
+                                );
+                            }
+                            SemTipe::Galat
+                        }
                     }
                 }
-
-                if tipe_inti != SemTipe::Galat {
-                    self.lapor(
-                        Diagnostik::galat(
-                            kode::BUKAN_STRUKTUR,
-                            format!(
-                                "tipe '{}' bukan struktur dan tidak memiliki bidang",
-                                tipe_inti.nama()
-                            ),
-                            objek.rentang,
-                        )
-                        .dengan_saran(
-                            "akses bidang '.' hanya berlaku untuk tipe struktur atau modul",
-                        ),
-                    );
-                }
-                SemTipe::Galat
             }
             JenisEkspresi::Indeks { objek, indeks } => {
                 let t_objek = self.evaluasi_ekspresi(objek);
@@ -1178,7 +1180,7 @@ impl PemeriksaSemantik {
             }
             JenisEkspresi::Larik(item) => {
                 if item.is_empty() {
-                    SemTipe::Larik(Box::new(SemTipe::Galat))
+                    SemTipe::Larik(Box::new(SemTipe::Generik("T".into())))
                 } else {
                     let t_pertama = self.evaluasi_ekspresi(&item[0]);
                     for el in &item[1..] {

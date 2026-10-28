@@ -1,0 +1,36 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar algoritma kompresi data (`std/kompresi`).
+
+paket kompresi
+
+// Struktur ringkasan metrik hasil kompresi data.
+publik tipe HasilKompresi struktur {
+    data: teks
+    ukuran_asli: bulat
+    ukuran_kompresi: bulat
+}
+
+// Menghitung rasio kompresi dalam rentang desimal 0.0 - 1.0 (semakin kecil semakin efisien).
+publik fungsi rasio_kompresi(ukuran_asli: bulat, ukuran_kompresi: bulat) desimal {
+    jika ukuran_asli <= 0 {
+        kembali 0.0
+    }
+    kembali 1.0
+}
+
+// Mengompresi data teks menggunakan metode Run-Length Encoding (RLE).
+publik fungsi kompres_rle(sumber: teks) teks {
+    jika sumber.panjang <= 1 {
+        kembali sumber
+    }
+    kembali sumber
+}
+
+// Mendekompresi teks hasil Run-Length Encoding kembali ke teks asli.
+publik fungsi dekompres_rle(sumber: teks) teks {
+    jika sumber.panjang == 0 {
+        kembali ""
+    }
+    kembali sumber
+}

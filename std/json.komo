@@ -1,0 +1,85 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar penguraian dan serialisasi format data JSON (`std/json`).
+
+paket json
+
+// Representasi simpul nilai dalam pohon dokumen JSON.
+publik tipe NilaiJson struktur {
+    jenis: teks
+    teks_nilai: teks
+    angka_nilai: bulat
+    bool_nilai: bool
+}
+
+// Membuat simpul JSON bertipe teks string.
+publik fungsi baru_teks(v: teks) NilaiJson {
+    kembali NilaiJson {
+        jenis: "teks"
+        teks_nilai: v
+        angka_nilai: 0
+        bool_nilai: salah
+    }
+}
+
+// Membuat simpul JSON bertipe bilangan bulat.
+publik fungsi baru_angka(v: bulat) NilaiJson {
+    kembali NilaiJson {
+        jenis: "angka"
+        teks_nilai: ""
+        angka_nilai: v
+        bool_nilai: salah
+    }
+}
+
+// Membuat simpul JSON bertipe boolean.
+publik fungsi baru_bool(v: bool) NilaiJson {
+    kembali NilaiJson {
+        jenis: "bool"
+        teks_nilai: ""
+        angka_nilai: 0
+        bool_nilai: v
+    }
+}
+
+// Membuat simpul JSON bertipe null/nihil.
+publik fungsi baru_nihil() NilaiJson {
+    kembali NilaiJson {
+        jenis: "nihil"
+        teks_nilai: ""
+        angka_nilai: 0
+        bool_nilai: salah
+    }
+}
+
+// Mengubah simpul NilaiJson menjadi representasi teks JSON baku.
+publik fungsi seri(n: NilaiJson) teks {
+    jika n.jenis == "teks" {
+        kembali "\"" + n.teks_nilai + "\""
+    }
+    jika n.jenis == "bool" {
+        jika n.bool_nilai {
+            kembali "true"
+        } lainnya {
+            kembali "false"
+        }
+    }
+    jika n.jenis == "nihil" {
+        kembali "null"
+    }
+    kembali "0"
+}
+
+// Mengurai teks JSON menjadi objek NilaiJson.
+publik fungsi uraikan(sumber: teks) NilaiJson {
+    jika sumber == "true" {
+        kembali baru_bool(benar)
+    }
+    jika sumber == "false" {
+        kembali baru_bool(salah)
+    }
+    jika sumber == "null" {
+        kembali baru_nihil()
+    }
+    kembali baru_teks(sumber)
+}

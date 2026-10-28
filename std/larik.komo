@@ -1,0 +1,100 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar operasi koleksi larik (`std/larik`).
+
+paket larik
+
+// Menghitung panjang elemen dalam larik bilangan bulat.
+publik fungsi panjang(data: [bulat]) bulat {
+    kembali data.panjang
+}
+
+// Memeriksa apakah larik bilangan bulat kosong.
+publik fungsi apakah_kosong(data: [bulat]) bool {
+    kembali data.panjang == 0
+}
+
+// Memeriksa apakah sebuah nilai bulat ada dalam larik.
+publik fungsi berisi_bulat(data: [bulat], cari: bulat) bool {
+    untuk item dalam data {
+        jika item == cari {
+            kembali benar
+        }
+    }
+    kembali salah
+}
+
+// Menghitung jumlah total (sum) dari elemen-elemen larik bulat.
+publik fungsi jumlah(data: [bulat]) bulat {
+    var total: bulat = 0
+    untuk item dalam data {
+        total = total + item
+    }
+    kembali total
+}
+
+// Menemukan nilai maksimum dalam larik bulat tidak kosong.
+publik fungsi nilai_maks(data: [bulat]) bulat {
+    jika data.panjang == 0 {
+        kembali 0
+    }
+    var m: bulat = data[0]
+    untuk item dalam data {
+        jika item > m {
+            m = item
+        }
+    }
+    kembali m
+}
+
+// Menemukan nilai minimum dalam larik bulat tidak kosong.
+publik fungsi nilai_min(data: [bulat]) bulat {
+    jika data.panjang == 0 {
+        kembali 0
+    }
+    var m: bulat = data[0]
+    untuk item dalam data {
+        jika item < m {
+            m = item
+        }
+    }
+    kembali m
+}
+
+// Menghitung berapa kali nilai tertentu muncul di dalam larik.
+publik fungsi hitung_kemunculan(data: [bulat], cari: bulat) bulat {
+    var cacah: bulat = 0
+    untuk item dalam data {
+        jika item == cari {
+            cacah = cacah + 1
+        }
+    }
+    kembali cacah
+}
+
+// Mengembalikan indeks pertama dari nilai yang dicari, atau -1 jika tidak ada.
+publik fungsi indeks_pertama(data: [bulat], cari: bulat) bulat {
+    var i: bulat = 0
+    selagi i < data.panjang {
+        jika data[i] == cari {
+            kembali i
+        }
+        i = i + 1
+    }
+    kembali -1
+}
+
+// Memeriksa apakah elemen-elemen larik terurut membesar (ascending).
+publik fungsi apakah_terurut(data: [bulat]) bool {
+    jika data.panjang <= 1 {
+        kembali benar
+    }
+    var i: bulat = 1
+    selagi i < data.panjang {
+        jika data[i - 1] > data[i] {
+            kembali salah
+        }
+        i = i + 1
+    }
+    kembali benar
+}

@@ -217,7 +217,9 @@ pub fn verifikasi_fungsi(f: &FungsiIr) -> Result<(), Vec<GalatVerifikasi>> {
             match val_opt {
                 Some(val) => {
                     if let Some(t_val) = tipe_nilai.get(val) {
-                        if *t_val != f.tipe_kembali && f.tipe_kembali != IrTipe::Void {
+                        let kompatibel = *t_val == f.tipe_kembali
+                            || (*t_val == IrTipe::Ptr && matches!(f.tipe_kembali, IrTipe::Struktur(_) | IrTipe::Larik(_, _)));
+                        if !kompatibel && f.tipe_kembali != IrTipe::Void {
                             galat.push(GalatVerifikasi {
                                 fungsi: nama_fungsi.clone(),
                                 blok: Some(b.id),

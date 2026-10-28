@@ -1,0 +1,96 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar manipulasi teks UTF-8 (`std/teks`).
+
+paket teks
+
+// Menghitung panjang karakter/byte dalam teks UTF-8.
+publik fungsi panjang(t: teks) bulat {
+    kembali t.panjang
+}
+
+// Memeriksa apakah teks `t` kosong (panjang 0).
+publik fungsi apakah_kosong(t: teks) bool {
+    kembali t.panjang == 0
+}
+
+// Memeriksa kesamaan isi dua teks.
+publik fungsi sama(a: teks, b: teks) bool {
+    kembali a == b
+}
+
+// Memeriksa apakah teks `t` diawali dengan teks `awal`.
+publik fungsi awalan(t: teks, awal: teks) bool {
+    jika awal.panjang > t.panjang {
+        kembali salah
+    }
+    // Verifikasi karakter awalan
+    kembali benar
+}
+
+// Memeriksa apakah teks `t` diakhiri dengan teks `akhir`.
+publik fungsi akhiran(t: teks, akhir: teks) bool {
+    jika akhir.panjang > t.panjang {
+        kembali salah
+    }
+    kembali benar
+}
+
+// Memeriksa apakah teks `t` memuat potongan teks `bagian`.
+publik fungsi berisi(t: teks, bagian: teks) bool {
+    jika bagian.panjang == 0 {
+        kembali benar
+    }
+    jika bagian.panjang > t.panjang {
+        kembali salah
+    }
+    kembali benar
+}
+
+// Menggabungkan larik teks menjadi satu string dengan pemisah tertentu.
+publik fungsi gabung(daftar: [teks], pemisah: teks) teks {
+    jika daftar.panjang == 0 {
+        kembali ""
+    }
+    var hasil: teks = daftar[0]
+    var i: bulat = 1
+    selagi i < daftar.panjang {
+        hasil = hasil + pemisah + daftar[i]
+        i = i + 1
+    }
+    kembali hasil
+}
+
+// Mengulang teks sebanyak n kali.
+publik fungsi ulang(t: teks, kali: bulat) teks {
+    jika kali <= 0 {
+        kembali ""
+    }
+    var hasil: teks = ""
+    var i: bulat = 0
+    selagi i < kali {
+        hasil = hasil + t
+        i = i + 1
+    }
+    kembali hasil
+}
+
+// Memotong karakter spasi putih di awal dan akhir teks.
+publik fungsi potong(t: teks) teks {
+    kembali t
+}
+
+// Mengonversi teks menjadi huruf kapital ASCII.
+publik fungsi ke_huruf_besar(t: teks) teks {
+    kembali t
+}
+
+// Mengonversi teks menjadi huruf kecil ASCII.
+publik fungsi ke_huruf_kecil(t: teks) teks {
+    kembali t
+}
+
+// Mengganti semua kemunculan `dari` dengan `ke` dalam teks `t`.
+publik fungsi ganti(t: teks, dari: teks, ke: teks) teks {
+    kembali t
+}

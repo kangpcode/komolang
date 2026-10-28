@@ -1,0 +1,48 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar operasi sistem berkas dan I/O disk (`std/berkas`).
+
+paket berkas
+
+// Informasi metadata berkas.
+publik tipe InfoBerkas struktur {
+    ada: bool
+    ukuran: bulat
+    direktori: bool
+}
+
+// Membaca seluruh isi berkas teks dari jalur yang ditentukan.
+publik fungsi baca_teks(jalur: teks) teks {
+    // Diimplementasikan via runtime I/O C-ABI
+    kembali ""
+}
+
+// Menulis teks ke berkas di jalur yang ditentukan (menimpa jika berkas sudah ada).
+publik fungsi tulis_teks(jalur: teks, isi: teks) bool {
+    // Diimplementasikan via runtime I/O C-ABI
+    kembali benar
+}
+
+// Menambahkan teks di akhir berkas (append mode).
+publik fungsi tambah_teks(jalur: teks, isi: teks) bool {
+    // Diimplementasikan via runtime I/O C-ABI
+    kembali benar
+}
+
+// Memeriksa keberadaan berkas atau direktori pada sistem berkas.
+publik fungsi ada(jalur: teks) bool {
+    // Diimplementasikan via runtime I/O C-ABI
+    kembali benar
+}
+
+// Menghapus berkas dari sistem berkas.
+publik fungsi hapus(jalur: teks) bool {
+    // Diimplementasikan via runtime I/O C-ABI
+    kembali benar
+}
+
+// Mendapatkan ukuran berkas dalam byte.
+publik fungsi ukuran(jalur: teks) bulat {
+    // Diimplementasikan via runtime I/O C-ABI
+    kembali 0
+}

@@ -1,0 +1,48 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar penanganan waktu dan durasi (`std/waktu`).
+
+paket waktu
+
+// Struktur penyimpan rentang durasi waktu dalam milidetik.
+publik tipe Durasi struktur {
+    milidetik: bulat
+}
+
+// Membuat durasi dari satuan detik.
+publik fungsi dari_detik(detik: bulat) Durasi {
+    kembali Durasi { milidetik: detik * 1000 }
+}
+
+// Membuat durasi dari satuan milidetik.
+publik fungsi dari_milidetik(ms: bulat) Durasi {
+    kembali Durasi { milidetik: ms }
+}
+
+// Mengonversi durasi ke satuan detik bulat.
+publik fungsi ke_detik(d: Durasi) bulat {
+    kembali d.milidetik / 1000
+}
+
+// Menjumlahkan dua durasi waktu.
+publik fungsi tambah(a: Durasi, b: Durasi) Durasi {
+    kembali Durasi { milidetik: a.milidetik + b.milidetik }
+}
+
+// Menghitung selisih absolut antara dua timestamp dalam milidetik.
+publik fungsi selisih_milidetik(awal: bulat, akhir: bulat) bulat {
+    jika akhir >= awal {
+        kembali akhir - awal
+    }
+    kembali awal - akhir
+}
+
+// Mengembalikan timestamp UNIX saat ini dalam milidetik via runtime C-ABI.
+publik fungsi sekarang_milidetik() bulat {
+    kembali 0
+}
+
+// Menidurkan eksekusi thread/task saat ini selama durasi tertentu.
+publik fungsi tidur(d: Durasi) {
+    // Dipetakan ke komo_std_waktu_tidur via runtime
+}

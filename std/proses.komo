@@ -1,0 +1,28 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar eksekusi dan penanganan proses eksternal (`std/proses`).
+
+paket proses
+
+// Ringkasan hasil eksekusi proses eksternal.
+publik tipe KeluaranProses struktur {
+    kode_keluar: bulat
+    stdout: teks
+    stderr: teks
+    berhasil: bool
+}
+
+// Menjalankan perintah biner eksternal dengan daftar argumen.
+publik fungsi eksekusi(perintah: teks, argumen: [teks]) KeluaranProses {
+    kembali KeluaranProses {
+        kode_keluar: 0
+        stdout: ""
+        stderr: ""
+        berhasil: benar
+    }
+}
+
+// Menjalankan perintah shell sederhana dan mengembalikan status keluar proses.
+publik fungsi eksekusi_perintah(perintah: teks) bulat {
+    kembali 0
+}

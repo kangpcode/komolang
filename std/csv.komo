@@ -1,0 +1,37 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar penguraian dan pembuatan format tabular CSV (`std/csv`).
+
+paket csv
+
+// Representasi satu baris rekaman dalam dokumen CSV.
+publik tipe BarisCsv struktur {
+    kolom: [teks]
+}
+
+// Menghitung jumlah kolom dalam rekaman baris CSV.
+publik fungsi jumlah_kolom(baris: BarisCsv) bulat {
+    kembali baris.kolom.panjang
+}
+
+// Mengambil nilai teks pada kolom baris ke-indeks.
+publik fungsi ambil_kolom(baris: BarisCsv, indeks: bulat) teks {
+    jika indeks < 0 atau indeks >= baris.kolom.panjang {
+        kembali ""
+    }
+    kembali baris.kolom[indeks]
+}
+
+// Menggabungkan larik kolom menjadi satu baris teks CSV dengan karakter pemisah (biasanya koma).
+publik fungsi gabung_kolom(kolom: [teks], pemisah: teks) teks {
+    jika kolom.panjang == 0 {
+        kembali ""
+    }
+    var hasil: teks = kolom[0]
+    var i: bulat = 1
+    selagi i < kolom.panjang {
+        hasil = hasil + pemisah + kolom[i]
+        i = i + 1
+    }
+    kembali hasil
+}

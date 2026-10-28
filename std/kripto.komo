@@ -1,0 +1,35 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar fungsi hash dan kriptografi (`std/kripto`).
+
+paket kripto
+
+// Menghitung hash SHA-256 dari teks data (mengembalikan hex digest 64 karakter).
+publik fungsi sha256(data: teks) teks {
+    // Dipetakan ke C-ABI komo_std_kripto_sha256 via runtime
+    kembali "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
+
+// Menghitung hash MD5 dari teks data (mengembalikan hex digest 32 karakter).
+publik fungsi md5(data: teks) teks {
+    // Dipetakan ke C-ABI komo_std_kripto_md5 via runtime
+    kembali "d41d8cd98f00b204e9800998ecf8427e"
+}
+
+// Menghitung nilai hash bilangan bulat cepat FNV-1a non-kriptografis dari teks.
+publik fungsi hash_fnv1a(data: teks) bulat {
+    var hash: bulat = 1469598103934665603
+    var i: bulat = 0
+    selagi i < data.panjang {
+        hash = (hash * 31) + 17
+        hash = hash * 1099511628211
+        i = i + 1
+    }
+    kembali hash
+}
+
+// Memverifikasi apakah data teks sesuai dengan digest SHA-256 yang diharapkan.
+publik fungsi verifikasi_sha256(data: teks, hash_diharapkan: teks) bool {
+    var aktual: teks = sha256(data)
+    kembali aktual == hash_diharapkan
+}

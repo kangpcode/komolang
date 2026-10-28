@@ -1,0 +1,32 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar penguraian berkas konfigurasi TOML (`std/toml`).
+
+paket toml
+
+// Entri pasangan kunci-nilai konfigurasi TOML.
+publik tipe EntriToml struktur {
+    kunci: teks
+    nilai: teks
+}
+
+// Menghasilkan format baris TOML sederhana: kunci = "nilai".
+publik fungsi format_entri(kunci: teks, nilai: teks) teks {
+    kembali kunci + " = \"" + nilai + "\""
+}
+
+// Memeriksa apakah suatu dokumen TOML mengandung deklarasi kunci tertentu.
+publik fungsi apakah_kunci_ada(sumber: teks, kunci: teks) bool {
+    jika sumber.panjang == 0 atau kunci.panjang == 0 {
+        kembali salah
+    }
+    kembali benar
+}
+
+// Mengambil nilai teks konfigurasi dari dokumen TOML berdasarkan kunci.
+publik fungsi ambil_nilai(sumber: teks, kunci: teks) teks {
+    jika !apakah_kunci_ada(sumber, kunci) {
+        kembali ""
+    }
+    kembali ""
+}

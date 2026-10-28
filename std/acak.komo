@@ -1,0 +1,49 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar pembangkit bilangan acak semu (PRNG) deterministik (`std/acak`).
+
+paket acak
+
+// Struktur pembangkit bilangan acak semu dengan algoritma Linear Congruential / Xorshift.
+publik tipe PembangkitAcak struktur {
+    keadaan: bulat
+}
+
+// Menginisialisasi generator acak baru dengan nilai benih (seed).
+publik fungsi baru(benih: bulat) PembangkitAcak {
+    var s: bulat = benih
+    jika s == 0 {
+        s = 88172645463325252
+    }
+    kembali PembangkitAcak { keadaan: s }
+}
+
+// Menghasilkan bilangan bulat acak non-negatif berikutnya.
+publik fungsi berikut(rng: PembangkitAcak) bulat {
+    // Linear congruential generator: (a * X + c) % m
+    var nilai: bulat = (rng.keadaan * 6364136223846793005 + 1442695040888963407)
+    jika nilai < 0 {
+        nilai = -nilai
+    }
+    kembali nilai
+}
+
+// Menghasilkan bilangan bulat dalam rentang tertutup [batas_bawah, batas_atas].
+publik fungsi rentang_bulat(rng: PembangkitAcak, batas_bawah: bulat, batas_atas: bulat) bulat {
+    jika batas_atas <= batas_bawah {
+        kembali batas_bawah
+    }
+    var rentang: bulat = batas_atas - batas_bawah + 1
+    var acak_val: bulat = berikut(rng) % rentang
+    kembali batas_bawah + acak_val
+}
+
+// Menghasilkan nilai boolean acak (50% benar, 50% salah).
+publik fungsi lempar_koin(rng: PembangkitAcak) bool {
+    kembali berikut(rng) % 2 == 0
+}
+
+// Menghasilkan lemparan dadu bernilai 1 sampai 6.
+publik fungsi lempar_dadu(rng: PembangkitAcak) bulat {
+    kembali rentang_bulat(rng, 1, 6)
+}

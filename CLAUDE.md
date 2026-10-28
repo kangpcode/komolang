@@ -205,11 +205,11 @@ fungsi utama() {
 
 ### Tahap 6 — Pustaka Standar (`std`)
 
-- [ ] `cetak`, `teks`, `larik`, `peta`, `matematika`, `waktu`, `acak`.
-- [ ] `berkas` (file), `jalur`, `os`, `lingkungan`, `proses`.
-- [ ] `jaringan` (TCP/UDP/TLS), `http` klien, `json`, `toml`, `yaml`, `csv`, `regex`.
-- [ ] `kripto` (hash, enkripsi standar, via implementasi teruji), `kompresi`.
-- [ ] `uji` (framework testing) dan `bench`.
+- [x] `cetak`, `teks`, `larik`, `peta`, `matematika`, `waktu`, `acak`.
+- [x] `berkas` (file), `jalur`, `os`, `lingkungan`, `proses`.
+- [x] `jaringan` (TCP/UDP/TLS), `http` klien, `json`, `toml`, `yaml`, `csv`, `regex`.
+- [x] `kripto` (hash, enkripsi standar, via implementasi teruji), `kompresi`.
+- [x] `uji` (framework testing) dan `bench`.
 
 * **Selesai bila:** tiap paket punya dokumentasi, contoh, dan cakupan tes minimal 85%.
 

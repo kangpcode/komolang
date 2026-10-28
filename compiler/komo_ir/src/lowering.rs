@@ -276,7 +276,16 @@ impl<'a> KonteksFungsi<'a> {
                 maka,
                 lainnya,
             } => {
-                let val_kondisi = self.turunkan_ekspresi(kondisi);
+                let mut val_kondisi = self.turunkan_ekspresi(kondisi);
+                if self.ambil_tipe_nilai(val_kondisi) != IrTipe::I1 {
+                    let zero = self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Bulat(0)));
+                    val_kondisi = self.alokasikan_instruksi(Instruksi::Biner {
+                        op: OpBiner::TidakSama,
+                        kiri: val_kondisi,
+                        kanan: zero,
+                        tipe: IrTipe::I64,
+                    });
+                }
 
                 let bb_maka = self.fungsi.buat_blok(Some("jika_maka".to_string()));
                 let bb_gabung = self.fungsi.buat_blok(Some("jika_gabung".to_string()));
@@ -331,7 +340,16 @@ impl<'a> KonteksFungsi<'a> {
                 self.atur_terminator_blok_aktif(Terminator::Lompat(bb_kondisi));
 
                 self.blok_aktif = bb_kondisi;
-                let val_kondisi = self.turunkan_ekspresi(kondisi);
+                let mut val_kondisi = self.turunkan_ekspresi(kondisi);
+                if self.ambil_tipe_nilai(val_kondisi) != IrTipe::I1 {
+                    let zero = self.alokasikan_instruksi(Instruksi::Konst(Konstanta::Bulat(0)));
+                    val_kondisi = self.alokasikan_instruksi(Instruksi::Biner {
+                        op: OpBiner::TidakSama,
+                        kiri: val_kondisi,
+                        kanan: zero,
+                        tipe: IrTipe::I64,
+                    });
+                }
                 self.atur_terminator_blok_aktif(Terminator::Cabang {
                     kondisi: val_kondisi,
                     jika_benar: bb_badan,
@@ -759,12 +777,24 @@ impl<'a> KonteksFungsi<'a> {
                 })
             }
 
-            JenisEkspresi::Bidang { objek, .. } => {
+            JenisEkspresi::Bidang { objek, nama } => {
                 let obj_ptr = self.turunkan_ekspresi(objek);
                 let tipe_hasil = self.ambil_tipe_ekspresi(expr);
+                let mut indeks = 0;
+                if let Some(sem_obj) = self.sema.tipe_ekspresi.get(&objek.rentang) {
+                    let tipe_inti = match sem_obj {
+                        komo_sema::SemTipe::Pinjam { dalam, .. } => *dalam.clone(),
+                        lain => lain.clone(),
+                    };
+                    if let komo_sema::SemTipe::Struktur { bidang, .. } = tipe_inti {
+                        if let Some((idx, _)) = bidang.iter().enumerate().find(|(_, (b_nama, _, _))| b_nama == &nama.nama) {
+                            indeks = idx;
+                        }
+                    }
+                }
                 let field_ptr = self.alokasikan_instruksi(Instruksi::AksesBidang {
                     struktur: obj_ptr,
-                    indeks: 0,
+                    indeks,
                 });
                 self.alokasikan_instruksi(Instruksi::Muat {
                     tipe: tipe_hasil,
@@ -898,6 +928,10 @@ impl<'a> KonteksFungsi<'a> {
                 _ => IrTipe::I64,
             }
         }
+    }
+
+    fn ambil_tipe_nilai(&self, id: IdNilai) -> IrTipe {
+        self.fungsi.ambil_tipe_nilai(id).unwrap_or(IrTipe::I64)
     }
 }
 

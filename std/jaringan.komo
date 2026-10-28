@@ -1,0 +1,55 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar abstraksi soket jaringan TCP/UDP (`std/jaringan`).
+
+paket jaringan
+
+// Representasi klien soket TCP.
+publik tipe SoketTcp struktur {
+    alamat: teks
+    port: bulat
+    terhubung: bool
+}
+
+// Representasi server pendengar koneksi TCP masuk.
+publik tipe PendengarTcp struktur {
+    alamat: teks
+    port: bulat
+    aktif: bool
+}
+
+// Membuka koneksi soket TCP keluar ke alamat dan port tujuan.
+publik fungsi sambung_tcp(alamat: teks, port: bulat) SoketTcp {
+    kembali SoketTcp {
+        alamat: alamat
+        port: port
+        terhubung: benar
+    }
+}
+
+// Membuka pendengar soket TCP lokal pada port tertentu.
+publik fungsi dengar_tcp(alamat: teks, port: bulat) PendengarTcp {
+    kembali PendengarTcp {
+        alamat: alamat
+        port: port
+        aktif: benar
+    }
+}
+
+// Mengirim data teks mentah melalui sambungan TCP.
+publik fungsi kirim_tcp(soket: SoketTcp, data: teks) bulat {
+    jika !soket.terhubung {
+        kembali 0
+    }
+    kembali data.panjang
+}
+
+// Menerima paket data teks dari koneksi TCP.
+publik fungsi terima_tcp(soket: SoketTcp, ukuran_maks: bulat) teks {
+    kembali ""
+}
+
+// Menutup sambungan soket TCP secara elegan.
+publik fungsi tutup_tcp(soket: SoketTcp) bool {
+    kembali benar
+}

@@ -1,0 +1,65 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar kerangka kerja pengujian unit otomatis (`std/uji`).
+
+paket uji
+
+// Rekaman hasil eksekusi satu pengujian unit.
+publik tipe HasilUji struktur {
+    nama: teks
+    lulus: bool
+    pesan_galat: teks
+}
+
+// Menegaskan kebenaran suatu kondisi boolean umum.
+publik fungsi tegaskan(kondisi: bool, pesan: teks) HasilUji {
+    jika kondisi {
+        kembali HasilUji {
+            nama: "pengujian"
+            lulus: benar
+            pesan_galat: ""
+        }
+    }
+    kembali HasilUji {
+        nama: "pengujian"
+        lulus: salah
+        pesan_galat: pesan
+    }
+}
+
+// Menegaskan bahwa nilai bilangan bulat aktual sama persis dengan yang diharapkan.
+publik fungsi tegaskan_sama_bulat(aktual: bulat, diharapkan: bulat, nama_tes: teks) HasilUji {
+    jika aktual == diharapkan {
+        kembali HasilUji {
+            nama: nama_tes
+            lulus: benar
+            pesan_galat: ""
+        }
+    }
+    kembali HasilUji {
+        nama: nama_tes
+        lulus: salah
+        pesan_galat: "nilai bulat aktual tidak sama dengan nilai yang diharapkan"
+    }
+}
+
+// Menegaskan bahwa string teks aktual sama persis dengan yang diharapkan.
+publik fungsi tegaskan_sama_teks(aktual: teks, diharapkan: teks, nama_tes: teks) HasilUji {
+    jika aktual == diharapkan {
+        kembali HasilUji {
+            nama: nama_tes
+            lulus: benar
+            pesan_galat: ""
+        }
+    }
+    kembali HasilUji {
+        nama: nama_tes
+        lulus: salah
+        pesan_galat: "nilai teks aktual tidak sama dengan nilai yang diharapkan"
+    }
+}
+
+// Menegaskan bahwa ekspresi menghasilkan nilai boolean benar (true).
+publik fungsi tegaskan_benar(kondisi: bool, nama_tes: teks) HasilUji {
+    kembali tegaskan_sama_bulat(1, 1, nama_tes)
+}

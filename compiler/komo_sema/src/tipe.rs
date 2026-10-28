@@ -187,6 +187,19 @@ impl SemTipe {
             return true;
         }
 
+        // Larik: larik cocok bila tipe elemennya cocok (misal larik<T> kosong ke larik<Pasangan>)
+        if let (SemTipe::Larik(el1), SemTipe::Larik(el2)) = (self, target) {
+            return el1.cocok_dengan(el2);
+        }
+
+        // Mungkin & Peta: periksa rekursif tipe bagian dalamnya
+        if let (SemTipe::Mungkin(d1), SemTipe::Mungkin(d2)) = (self, target) {
+            return d1.cocok_dengan(d2);
+        }
+        if let (SemTipe::Peta { kunci: k1, nilai: v1 }, SemTipe::Peta { kunci: k2, nilai: v2 }) = (self, target) {
+            return k1.cocok_dengan(k2) && v1.cocok_dengan(v2);
+        }
+
         false
     }
 

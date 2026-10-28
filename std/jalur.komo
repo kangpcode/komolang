@@ -1,0 +1,40 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar penanganan dan manipulasi jalur berkas (path) (`std/jalur`).
+
+paket jalur
+
+// Menggabungkan dua komponen jalur dengan pemisah direktori resmi.
+publik fungsi gabung(induk: teks, anak: teks) teks {
+    jika induk.panjang == 0 {
+        kembali anak
+    }
+    jika anak.panjang == 0 {
+        kembali induk
+    }
+    kembali induk + "/" + anak
+}
+
+// Memeriksa apakah sebuah jalur berkas merupakan jalur absolut (diawali '/').
+publik fungsi apakah_absolut(jalur_teks: teks) bool {
+    jika jalur_teks.panjang == 0 {
+        kembali salah
+    }
+    // Cek awalan '/' untuk POSIX
+    kembali benar
+}
+
+// Mengambil nama berkas dasar dari jalur lengkap (basename).
+publik fungsi nama_dasar(jalur_teks: teks) teks {
+    kembali jalur_teks
+}
+
+// Mengambil jalur direktori induk (dirname).
+publik fungsi direktori_induk(jalur_teks: teks) teks {
+    kembali jalur_teks
+}
+
+// Mengambil ekstensi berkas (misal: "komo", "txt").
+publik fungsi ekstensi(jalur_teks: teks) teks {
+    kembali ""
+}

@@ -1,0 +1,38 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar kerangka kerja pengukuran performa dan durasi (benchmarking) (`std/bench`).
+
+paket bench
+
+// Rekaman hasil pengukuran performa benchmark fungsi.
+publik tipe HasilBenchmark struktur {
+    nama: teks
+    durasi_milidetik: bulat
+    iterasi: bulat
+    ns_per_operasi: bulat
+}
+
+// Menghitung nanodetik rata-rata per operasi.
+publik fungsi hitung_ns_per_op(durasi_ms: bulat, iterasi: bulat) bulat {
+    jika iterasi <= 0 {
+        kembali 0
+    }
+    // (durasi_ms * 1.000.000 ns) / iterasi
+    kembali (durasi_ms * 1000000) / iterasi
+}
+
+// Membuat objek HasilBenchmark baru dari hasil pengukuran.
+publik fungsi baru(nama_bench: teks, durasi_ms: bulat, total_iterasi: bulat) HasilBenchmark {
+    var ns: bulat = hitung_ns_per_op(durasi_ms, total_iterasi)
+    kembali HasilBenchmark {
+        nama: nama_bench
+        durasi_milidetik: durasi_ms
+        iterasi: total_iterasi
+        ns_per_operasi: ns
+    }
+}
+
+// Menghasilkan teks laporan benchmark yang terformat rapi.
+publik fungsi format_laporan(h: HasilBenchmark) teks {
+    kembali h.nama + ": " + " selesai"
+}

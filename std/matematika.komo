@@ -1,14 +1,156 @@
 // Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
 
+//! Pustaka standar fungsi matematika numerik (`std/matematika`).
+
 paket matematika
 
-konst PI: desimal = 3.141592653589793
-konst E: desimal = 2.718281828459045
+publik konst PI: desimal = 3.141592653589793
+publik konst E: desimal = 2.718281828459045
+publik konst TAU: desimal = 6.283185307179586
 
-// Mengembalikan nilai absolut dari sebuah bilangan bulat.
+// Mengembalikan nilai mutlak (absolut) dari sebuah bilangan bulat.
 publik fungsi mutlak(n: bulat) bulat {
     jika n < 0 {
         kembali -n
     }
     kembali n
+}
+
+// Mengembalikan nilai mutlak (absolut) dari bilangan desimal.
+publik fungsi mutlak_desimal(x: desimal) desimal {
+    jika x < 0.0 {
+        kembali -x
+    }
+    kembali x
+}
+
+// Mengembalikan nilai maksimum dari dua bilangan bulat.
+publik fungsi maks(a: bulat, b: bulat) bulat {
+    jika a > b {
+        kembali a
+    }
+    kembali b
+}
+
+// Mengembalikan nilai minimum dari dua bilangan bulat.
+publik fungsi min(a: bulat, b: bulat) bulat {
+    jika a < b {
+        kembali a
+    }
+    kembali b
+}
+
+// Menghitung perpangkatan bilangan bulat: basis ^ eksponen (eksponen >= 0).
+publik fungsi pangkat(basis: bulat, eksponen: bulat) bulat {
+    jika eksponen <= 0 {
+        kembali 1
+    }
+    var hasil: bulat = 1
+    var b: bulat = basis
+    var e: bulat = eksponen
+
+    selagi e > 0 {
+        jika e % 2 == 1 {
+            hasil = hasil * b
+        }
+        b = b * b
+        e = e / 2
+    }
+
+    kembali hasil
+}
+
+// Menghitung akar kuadrat integer pendekatan Newton.
+publik fungsi akar_bulat(x: bulat) bulat {
+    jika x <= 0 {
+        kembali 0
+    }
+    jika x == 1 {
+        kembali 1
+    }
+
+    var r: bulat = x / 2
+    selagi r * r > x {
+        r = (r + x / r) / 2
+    }
+    kembali r
+}
+
+// Menghitung faktorial bilangan bulat secara rekursif: n!
+publik fungsi faktorial_rekursif(n: bulat) bulat {
+    jika n <= 1 {
+        kembali 1
+    }
+    kembali n * faktorial_rekursif(n - 1)
+}
+
+// Menghitung faktorial bilangan bulat secara iteratif: n!
+publik fungsi faktorial_iteratif(n: bulat) bulat {
+    jika n <= 1 {
+        kembali 1
+    }
+    var hasil: bulat = 1
+    var i: bulat = 2
+    selagi i <= n {
+        hasil = hasil * i
+        i = i + 1
+    }
+    kembali hasil
+}
+
+// Alias resmi faktorial bawaan (menggunakan implementasi iteratif yang aman dari overflow stack).
+publik fungsi faktorial(n: bulat) bulat {
+    kembali faktorial_iteratif(n)
+}
+
+// Menghitung Faktor Persekutuan Terbesar (FPB / GCD) dari dua bilangan bulat menggunakan algoritma Euclidean.
+publik fungsi fbb(a: bulat, b: bulat) bulat {
+    var x: bulat = mutlak(a)
+    var y: bulat = mutlak(b)
+    selagi y != 0 {
+        var sisa: bulat = x % y
+        x = y
+        y = sisa
+    }
+    kembali x
+}
+
+// Menghitung Kelipatan Persekutuan Terkecil (KPK / LCM) dari dua bilangan bulat.
+publik fungsi kpk(a: bulat, b: bulat) bulat {
+    jika a == 0 atau b == 0 {
+        kembali 0
+    }
+    kembali mutlak(a * b) / fbb(a, b)
+}
+
+// Memeriksa apakah suatu bilangan bulat adalah bilangan prima.
+publik fungsi apakah_prima(n: bulat) bool {
+    jika n <= 1 {
+        kembali salah
+    }
+    jika n <= 3 {
+        kembali benar
+    }
+    jika n % 2 == 0 atau n % 3 == 0 {
+        kembali salah
+    }
+
+    var i: bulat = 5
+    selagi i * i <= n {
+        jika n % i == 0 atau n % (i + 2) == 0 {
+            kembali salah
+        }
+        i = i + 6
+    }
+    kembali benar
+}
+
+// Memeriksa apakah bilangan bulat bernilai genap.
+publik fungsi apakah_genap(n: bulat) bool {
+    kembali n % 2 == 0
+}
+
+// Memeriksa apakah bilangan bulat bernilai ganjil.
+publik fungsi apakah_ganjil(n: bulat) bool {
+    kembali n % 2 != 0
 }

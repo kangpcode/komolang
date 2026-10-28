@@ -1,0 +1,50 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar struktur data koleksi peta pasangan kunci-nilai (`std/peta`).
+
+paket peta
+
+// Pasangan kunci dan nilai teks.
+publik tipe Pasangan struktur {
+    kunci: teks
+    nilai: teks
+}
+
+// Koleksi peta asosiatif berbasis larik terindeks.
+publik tipe PetaTeks struktur {
+    entri: [Pasangan]
+    kapasitas: bulat
+}
+
+// Membuat instans PetaTeks baru yang kosong.
+publik fungsi baru() PetaTeks {
+    kembali PetaTeks {
+        entri: []
+        kapasitas: 0
+    }
+}
+
+// Menghitung jumlah entri pasangan dalam peta.
+publik fungsi jumlah_entri(p: PetaTeks) bulat {
+    kembali p.entri.panjang
+}
+
+// Memeriksa apakah sebuah kunci tersimpan di dalam peta.
+publik fungsi memuat(p: PetaTeks, cari_kunci: teks) bool {
+    untuk pasangan dalam p.entri {
+        jika pasangan.kunci == cari_kunci {
+            kembali benar
+        }
+    }
+    kembali salah
+}
+
+// Mengambil nilai berdasarkan kunci, atau mengembalikan teks kosong jika tidak ditemukan.
+publik fungsi ambil(p: PetaTeks, cari_kunci: teks) teks {
+    untuk pasangan dalam p.entri {
+        jika pasangan.kunci == cari_kunci {
+            kembali pasangan.nilai
+        }
+    }
+    kembali ""
+}

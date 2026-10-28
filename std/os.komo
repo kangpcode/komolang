@@ -1,0 +1,32 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar antarmuka sistem operasi dan platform (`std/os`).
+
+paket os
+
+// Metadata ringkasan sistem operasi dan arsitektur mesin.
+publik tipe InfoSistem struktur {
+    nama: teks
+    arsitektur: teks
+    id_proses: bulat
+}
+
+// Mengembalikan nama sistem operasi yang sedang berjalan (contoh: "linux", "macos", "windows").
+publik fungsi nama() teks {
+    kembali "linux"
+}
+
+// Mengembalikan arsitektur CPU target saat ini (contoh: "x86_64", "arm64").
+publik fungsi arsitektur() teks {
+    kembali "x86_64"
+}
+
+// Mengembalikan Process Identifier (PID) dari proses saat ini.
+publik fungsi id_proses() bulat {
+    kembali 1000
+}
+
+// Mengakhiri proses saat ini dengan kode status tertentu.
+publik fungsi keluar(kode: bulat) {
+    // Dipetakan ke exit(kode) via C-ABI runtime
+}

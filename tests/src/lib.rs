@@ -28,6 +28,8 @@ mod tes_codegen_native;
 mod tes_codegen_asm;
 #[cfg(test)]
 mod tes_runtime;
+#[cfg(test)]
+mod tes_std;
 
 #[cfg(test)]
 mod tests {

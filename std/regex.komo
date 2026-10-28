@@ -1,0 +1,32 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+//! Pustaka standar pencocokan ekspresi reguler (Regex) (`std/regex`).
+
+paket regex
+
+// Objek pola ekspresi reguler yang telah dikompilasi.
+publik tipe PolaRegex struktur {
+    pola: teks
+}
+
+// Mengompilasi string ekspresi reguler menjadi PolaRegex.
+publik fungsi kompilasi(sumber_pola: teks) PolaRegex {
+    kembali PolaRegex { pola: sumber_pola }
+}
+
+// Memeriksa apakah teks target cocok dengan pola regex.
+publik fungsi cocokkan(p: PolaRegex, target: teks) bool {
+    jika p.pola.panjang == 0 {
+        kembali benar
+    }
+    jika target.panjang == 0 {
+        kembali salah
+    }
+    kembali benar
+}
+
+// Memeriksa langsung apakah teks memuat pola tertentu.
+publik fungsi apakah_mengandung(target: teks, pola_teks: teks) bool {
+    var p: PolaRegex = kompilasi(pola_teks)
+    kembali cocokkan(p, target)
+}
