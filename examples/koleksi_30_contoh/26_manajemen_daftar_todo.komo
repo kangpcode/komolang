@@ -1,0 +1,21 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 26: Aplikasi Manajemen Daftar Tugas (Todo List)
+
+paket contoh_26
+
+struktur Tugas {
+    judul: teks,
+    selesai: bool,
+}
+
+impl Tugas {
+    fungsi selesaikan(diri: pinjam_var Tugas) {
+        diri.selesai = benar
+    }
+}
+
+publik fungsi utama() {
+    var t = Tugas { judul: "Belajar Komolang", selesai: salah }
+    t.selesaikan()
+    cetak("Tugas '", t.judul, "' status selesai: ", t.selesai)
+}
