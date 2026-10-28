@@ -5,7 +5,7 @@ paket contoh_08
 
 impor "std/cetak"
 
-fungsi partisi(larik: pinjam_var [bulat], rendah: bulat, tinggi: bulat) bulat {
+fungsi partisi(larik: pinjam var [bulat], rendah: bulat, tinggi: bulat) bulat {
     biar pivot = larik[tinggi]
     var i = rendah - 1
 
@@ -24,16 +24,16 @@ fungsi partisi(larik: pinjam_var [bulat], rendah: bulat, tinggi: bulat) bulat {
     kembali i + 1
 }
 
-fungsi quicksort(larik: pinjam_var [bulat], rendah: bulat, tinggi: bulat) {
+fungsi quicksort(larik: pinjam var [bulat], rendah: bulat, tinggi: bulat) {
     jika rendah < tinggi {
-        biar pi = partisi(pinjam_var larik, rendah, tinggi)
-        quicksort(pinjam_var larik, rendah, pi - 1)
-        quicksort(pinjam_var larik, pi + 1, tinggi)
+        biar pi = partisi(larik, rendah, tinggi)
+        quicksort(larik, rendah, pi - 1)
+        quicksort(larik, pi + 1, tinggi)
     }
 }
 
 publik fungsi utama() {
     var data = [10, 80, 30, 90, 40, 50, 70]
-    quicksort(pinjam_var data, 0, 6)
+    quicksort(pinjam var data, 0, 6)
     cetak.baris("QuickSort selesai! Elemen terkecil: ", data[0])
 }

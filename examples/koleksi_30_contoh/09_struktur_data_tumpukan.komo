@@ -10,12 +10,12 @@ tipe Tumpukan struktur {
     ukuran: bulat
 }
 
-fungsi (diri: pinjam_var Tumpukan) dorong(nilai: bulat) {
+fungsi (diri: pinjam var Tumpukan) dorong(nilai: bulat) {
     diri.elemen[diri.ukuran] = nilai
     diri.ukuran += 1
 }
 
-fungsi (diri: pinjam_var Tumpukan) tarik() bulat {
+fungsi (diri: pinjam var Tumpukan) tarik() bulat {
     jika diri.ukuran <= 0 {
         kembali 0
     }

@@ -10,7 +10,7 @@ tipe Tugas struktur {
     selesai: bool
 }
 
-fungsi (diri: pinjam_var Tugas) selesaikan() {
+fungsi (diri: pinjam var Tugas) selesaikan() {
     diri.selesai = benar
 }
 

@@ -280,10 +280,10 @@ fungsi utama() {
 
 ### Tahap 14 — Dokumentasi, Komunitas, Rilis 1.0
 
-- [ ] Buku resmi **"Belajar Komolang"** untuk pemula (Bahasa Indonesia), tur interaktif, dan playground online (WASM).
-- [ ] Dokumentasi referensi, panduan migrasi dari Go/Python/C, dan 30+ contoh proyek.
-- [ ] Website, forum/Discord, template proyek, dan panduan kontributor.
-- [ ] Rilis **v1.0** dengan jaminan stabilitas.
+- [x] Buku resmi **"Belajar Komolang"** untuk pemula (Bahasa Indonesia), tur interaktif, dan playground online (WASM).
+- [x] Dokumentasi referensi, panduan migrasi dari Go/Python/C, dan 30+ contoh proyek.
+- [x] Website, forum/Discord, template proyek, dan panduan kontributor.
+- [x] Rilis **v1.0** dengan jaminan stabilitas.
 
 * **Selesai bila:** orang baru bisa belajar, membangun, dan merilis aplikasi hanya dari dokumentasi resmi.
 

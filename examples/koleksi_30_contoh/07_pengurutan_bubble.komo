@@ -5,7 +5,7 @@ paket contoh_07
 
 impor "std/cetak"
 
-fungsi urutkan(larik: pinjam_var [bulat]) {
+fungsi urutkan(larik: pinjam var [bulat]) {
     var panjang = 5
     untuk i dalam 0..panjang {
         untuk j dalam 0..(panjang - i - 1) {
@@ -20,6 +20,6 @@ fungsi urutkan(larik: pinjam_var [bulat]) {
 
 publik fungsi utama() {
     var angka = [64, 34, 25, 12, 22]
-    urutkan(pinjam_var angka)
+    urutkan(pinjam var angka)
     cetak.baris("Data setelah diurutkan: ", angka[0], ", ", angka[1], ", ", angka[2])
 }

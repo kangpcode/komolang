@@ -12,7 +12,7 @@ tipe Partikel2D struktur {
     vy: desimal
 }
 
-fungsi (diri: pinjam_var Partikel2D) langkah(dt: desimal) {
+fungsi (diri: pinjam var Partikel2D) langkah(dt: desimal) {
     diri.x += diri.vx * dt
     diri.y += diri.vy * dt
 }
