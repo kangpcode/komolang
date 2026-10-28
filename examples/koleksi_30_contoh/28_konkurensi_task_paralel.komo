@@ -1,0 +1,14 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 28: Konkurensi Task Latar Belakang Paralel
+
+paket contoh_28
+
+fungsi proses_angka(x: bulat) bulat {
+    kembali x * x
+}
+
+publik fungsi utama() {
+    biar hasil1 = proses_angka(10)
+    biar hasil2 = proses_angka(20)
+    cetak("Hasil paralel 1: ", hasil1, ", Hasil paralel 2: ", hasil2)
+}

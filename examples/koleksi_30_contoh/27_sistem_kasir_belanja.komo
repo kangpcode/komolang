@@ -1,0 +1,23 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 27: Sistem Kasir Transaksi Belanja
+
+paket contoh_27
+
+struktur ItemBelanja {
+    nama: teks,
+    harga: bulat,
+    jumlah: bulat,
+}
+
+impl ItemBelanja {
+    fungsi subtotal(diri: pinjam ItemBelanja) bulat {
+        kembali diri.harga * diri.jumlah
+    }
+}
+
+publik fungsi utama() {
+    biar item1 = ItemBelanja { nama: "Buku", harga: 25000, jumlah: 2 }
+    biar item2 = ItemBelanja { nama: "Pena", harga: 5000, jumlah: 3 }
+    biar total = item1.subtotal() + item2.subtotal()
+    cetak("Total tagihan kasir: Rp ", total)
+}
