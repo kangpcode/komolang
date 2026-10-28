@@ -1,0 +1,17 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 30: Aplikasi Baris Perintah (CLI) dan Parsing Argumen
+
+paket contoh_30
+
+fungsi proses_perintah(cmd: pinjam teks) teks {
+    jika cmd.panjang() == 0 {
+        kembali "Gunakan --bantuan untuk opsi perintah"
+    }
+    kembali "Perintah berhasil diproses"
+}
+
+publik fungsi utama() {
+    biar opsi = "--versi"
+    biar respons = proses_perintah(pinjam opsi)
+    cetak("Status CLI: ", respons)
+}

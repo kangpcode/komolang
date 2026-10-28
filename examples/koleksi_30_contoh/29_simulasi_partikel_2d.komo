@@ -1,0 +1,24 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 29: Simulasi Fisika Gerak Partikel 2D
+
+paket contoh_29
+
+struktur Partikel2D {
+    x: desimal,
+    y: desimal,
+    vx: desimal,
+    vy: desimal,
+}
+
+impl Partikel2D {
+    fungsi langkah(diri: pinjam_var Partikel2D, dt: desimal) {
+        diri.x += diri.vx * dt
+        diri.y += diri.vy * dt
+    }
+}
+
+publik fungsi utama() {
+    var p = Partikel2D { x: 0.0, y: 0.0, vx: 10.0, vy: 5.0 }
+    p.langkah(0.5)
+    cetak("Posisi partikel setelah 0.5s: (", p.x, ", ", p.y, ")")
+}
