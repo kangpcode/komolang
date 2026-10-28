@@ -187,10 +187,10 @@ fungsi utama() {
 
 ### Tahap 4B — Backend Assembly & Toolchain Sendiri
 
-- [ ] Emitter assembly x86\_64 dan ARM64 langsung dari KIR (register allocation linear scan, lalu graph coloring).
-- [ ] Assembler sendiri dan penulis format ELF, Mach-O, PE/COFF.
-- [ ] Linker sederhana sendiri (opsional bertahap; boleh memakai linker sistem dahulu).
-- [ ] Opsi `komo bangun --backend=asm` dan perbandingan dengan backend 4A.
+- [x] Emitter assembly x86\_64 dan ARM64 langsung dari KIR (register allocation linear scan, lalu graph coloring).
+- [x] Assembler sendiri dan penulis format ELF, Mach-O, PE/COFF.
+- [x] Linker sederhana sendiri (opsional bertahap; boleh memakai linker sistem dahulu).
+- [x] Opsi `komo bangun --backend=asm` dan perbandingan dengan backend 4A.
 
 * **Selesai bila:** backend sendiri lulus seluruh suite tes yang sama dengan 4A.
 

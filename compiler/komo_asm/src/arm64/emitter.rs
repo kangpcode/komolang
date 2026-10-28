@@ -78,29 +78,122 @@ pub fn emit_arm64(modul: &ModulIr) -> String {
     out
 }
 
+struct TataLetakStackArm64 {
+    peta_nilai: HashMap<IdNilai, i64>,
+    peta_alloca: HashMap<IdNilai, i64>,
+    frame_size: usize,
+}
+
+fn hitung_tata_letak_stack_arm64(f: &FungsiIr) -> TataLetakStackArm64 {
+    let mut peta_nilai: HashMap<IdNilai, i64> = HashMap::new();
+    let mut peta_alloca: HashMap<IdNilai, i64> = HashMap::new();
+    let mut slot_counter: usize = 0;
+
+    for p in &f.parameter {
+        slot_counter += 1;
+        peta_nilai.insert(p.nilai, (slot_counter * 8) as i64);
+    }
+
+    for b in &f.blok {
+        for (hasil, inst) in &b.instruksi {
+            if let Some(res) = hasil {
+                if !peta_nilai.contains_key(res) {
+                    slot_counter += 1;
+                    peta_nilai.insert(*res, (slot_counter * 8) as i64);
+                }
+            }
+            if let (Some(res), Instruksi::Alloca(tipe)) = (hasil, inst) {
+                let bytes = tipe.ukuran_bita().max(8);
+                let slots = (bytes + 7) / 8;
+                slot_counter += slots;
+                peta_alloca.insert(*res, (slot_counter * 8) as i64);
+            }
+        }
+    }
+
+    let total_bytes = slot_counter * 8;
+    let frame_size = ((total_bytes + 16 + 15) / 16) * 16;
+    let frame_size = frame_size.max(32);
+
+    TataLetakStackArm64 {
+        peta_nilai,
+        peta_alloca,
+        frame_size,
+    }
+}
+
+fn format_lokasi_arm64(id: IdNilai, layout: &TataLetakStackArm64) -> String {
+    let offset = layout.peta_nilai.get(&id).copied().unwrap_or(8);
+    format!("[x29, #-{}]", offset)
+}
+
+fn emit_muat_ke_reg_arm64(out: &mut String, src_loc: &str, target_reg: &str) {
+    if src_loc == target_reg {
+        return;
+    }
+    if src_loc.starts_with('[') {
+        writeln!(out, "\tldr {}, {}", target_reg, src_loc).unwrap();
+    } else {
+        writeln!(out, "\tmov {}, {}", target_reg, src_loc).unwrap();
+    }
+}
+
+fn emit_simpan_nilai_arm64(out: &mut String, prefix_inst: &str, dest_loc: &str) {
+    if !prefix_inst.is_empty() {
+        writeln!(out, "{}", prefix_inst).unwrap();
+    }
+    if dest_loc == "x0" {
+        return;
+    }
+    if dest_loc.starts_with('[') {
+        writeln!(out, "\tstr x0, {}", dest_loc).unwrap();
+    } else {
+        writeln!(out, "\tmov {}, x0", dest_loc).unwrap();
+    }
+}
+
+fn emit_resolusi_phi_arm64(
+    out: &mut String,
+    f: &FungsiIr,
+    bb_asal_id: komo_ir::IdBlok,
+    bb_tujuan_id: komo_ir::IdBlok,
+    layout: &TataLetakStackArm64,
+) {
+    if let Some(target_bb) = f.blok.iter().find(|b| b.id == bb_tujuan_id) {
+        for (hasil, inst) in &target_bb.instruksi {
+            if let (Some(dest_id), Instruksi::Phi { masukan, .. }) = (hasil, inst) {
+                for (val, blok_id) in masukan {
+                    if *blok_id == bb_asal_id {
+                        let loc_src = format_lokasi_arm64(*val, layout);
+                        let loc_dest = format_lokasi_arm64(*dest_id, layout);
+                        emit_muat_ke_reg_arm64(out, &loc_src, "x0");
+                        emit_simpan_nilai_arm64(out, "", &loc_dest);
+                    }
+                }
+            }
+        }
+    }
+}
+
 fn emit_fungsi_arm64(out: &mut String, f: &FungsiIr, label_string: &HashMap<String, String>) {
-    let regalloc = alokasikan_register_linear_scan(f, POOL_REGISTER_ALOKASI_ARM64.len());
+    let _regalloc = alokasikan_register_linear_scan(f, POOL_REGISTER_ALOKASI_ARM64.len());
+    let layout = hitung_tata_letak_stack_arm64(f);
     let nama_asm = f.nama.replace('.', "_");
 
     writeln!(out, "\t.globl {}", nama_asm).unwrap();
     writeln!(out, "\t.type {}, %function", nama_asm).unwrap();
     writeln!(out, "{}:", nama_asm).unwrap();
 
-    // Stack frame size minimal 16 bita dan kelipatan 16 (AAPCS64)
-    let frame_size = ((regalloc.ukuran_stack + 16 + 15) / 16) * 16;
-    writeln!(out, "\tstp x29, x30, [sp, -{}]!", frame_size).unwrap();
+    // Stack frame size minimal 32 bita dan kelipatan 16 (AAPCS64)
+    writeln!(out, "\tstp x29, x30, [sp, -{}]!", layout.frame_size).unwrap();
     writeln!(out, "\tmov x29, sp").unwrap();
 
-    // Salin argumen parameter dari x0..x7 ke lokasi register/stack masing-masing
+    // Salin argumen parameter dari x0..x7 ke lokasi stack masing-masing
     for (i, p) in f.parameter.iter().enumerate() {
         if i < REG_PARAMETER_ARM64.len() {
             let reg_param = REG_PARAMETER_ARM64[i];
-            let dest_loc = format_lokasi_arm64(p.nilai, &regalloc);
-            if dest_loc.starts_with('[') {
-                writeln!(out, "\tstr {}, {}", reg_param.sebagai_str(), dest_loc).unwrap();
-            } else {
-                writeln!(out, "\tmov {}, {}", dest_loc, reg_param.sebagai_str()).unwrap();
-            }
+            let dest_loc = format_lokasi_arm64(p.nilai, &layout);
+            writeln!(out, "\tstr {}, {}", reg_param.sebagai_str(), dest_loc).unwrap();
         }
     }
 
@@ -112,7 +205,7 @@ fn emit_fungsi_arm64(out: &mut String, f: &FungsiIr, label_string: &HashMap<Stri
                 Instruksi::Phi { .. } => {}
                 Instruksi::Konst(k) => {
                     if let Some(res) = hasil {
-                        let dest = format_lokasi_arm64(*res, &regalloc);
+                        let dest = format_lokasi_arm64(*res, &layout);
                         match k {
                             Konstanta::Bulat(n) => {
                                 emit_simpan_nilai_arm64(out, &format!("\tmov x0, #{}", n), &dest);
@@ -145,13 +238,12 @@ fn emit_fungsi_arm64(out: &mut String, f: &FungsiIr, label_string: &HashMap<Stri
                 }
 
                 Instruksi::Biner { op, kiri, kanan, .. } => {
-                    let loc_kiri = format_lokasi_arm64(*kiri, &regalloc);
-                    let loc_kanan = format_lokasi_arm64(*kanan, &regalloc);
+                    let loc_kiri = format_lokasi_arm64(*kiri, &layout);
+                    let loc_kanan = format_lokasi_arm64(*kanan, &layout);
                     let dest = hasil
-                        .map(|r| format_lokasi_arm64(r, &regalloc))
+                        .map(|r| format_lokasi_arm64(r, &layout))
                         .unwrap_or_else(|| "x0".to_string());
 
-                    // Muat kiri ke x0, kanan ke x1
                     emit_muat_ke_reg_arm64(out, &loc_kiri, "x0");
                     emit_muat_ke_reg_arm64(out, &loc_kanan, "x1");
 
@@ -169,7 +261,6 @@ fn emit_fungsi_arm64(out: &mut String, f: &FungsiIr, label_string: &HashMap<Stri
                             writeln!(out, "\tsdiv x0, x0, x1").unwrap();
                         }
                         OpBiner::Sisa => {
-                            // sdiv x2, x0, x1; msub x0, x2, x1, x0
                             writeln!(out, "\tsdiv x2, x0, x1").unwrap();
                             writeln!(out, "\tmsub x0, x2, x1, x0").unwrap();
                         }
@@ -188,7 +279,6 @@ fn emit_fungsi_arm64(out: &mut String, f: &FungsiIr, label_string: &HashMap<Stri
                         OpBiner::GeserKanan => {
                             writeln!(out, "\tasr x0, x0, x1").unwrap();
                         }
-                        // Perbandingan
                         OpBiner::SamaDengan => {
                             writeln!(out, "\tcmp x0, x1").unwrap();
                             writeln!(out, "\tcset x0, eq").unwrap();
@@ -219,9 +309,9 @@ fn emit_fungsi_arm64(out: &mut String, f: &FungsiIr, label_string: &HashMap<Stri
                 }
 
                 Instruksi::Unari { op, operan, .. } => {
-                    let loc_op = format_lokasi_arm64(*operan, &regalloc);
+                    let loc_op = format_lokasi_arm64(*operan, &layout);
                     let dest = hasil
-                        .map(|r| format_lokasi_arm64(r, &regalloc))
+                        .map(|r| format_lokasi_arm64(r, &layout))
                         .unwrap_or_else(|| "x0".to_string());
                     emit_muat_ke_reg_arm64(out, &loc_op, "x0");
                     match op {
@@ -240,16 +330,17 @@ fn emit_fungsi_arm64(out: &mut String, f: &FungsiIr, label_string: &HashMap<Stri
 
                 Instruksi::Alloca(_) => {
                     if let Some(res) = hasil {
-                        let dest = format_lokasi_arm64(*res, &regalloc);
-                        writeln!(out, "\tsub x0, x29, #16").unwrap();
+                        let dest = format_lokasi_arm64(*res, &layout);
+                        let offset = layout.peta_alloca.get(res).copied().unwrap_or(16);
+                        writeln!(out, "\tsub x0, x29, #{}", offset).unwrap();
                         emit_simpan_nilai_arm64(out, "", &dest);
                     }
                 }
 
                 Instruksi::Muat { penunjuk, .. } => {
-                    let loc_ptr = format_lokasi_arm64(*penunjuk, &regalloc);
+                    let loc_ptr = format_lokasi_arm64(*penunjuk, &layout);
                     let dest = hasil
-                        .map(|r| format_lokasi_arm64(r, &regalloc))
+                        .map(|r| format_lokasi_arm64(r, &layout))
                         .unwrap_or_else(|| "x0".to_string());
                     emit_muat_ke_reg_arm64(out, &loc_ptr, "x1");
                     writeln!(out, "\tldr x0, [x1]").unwrap();
@@ -257,17 +348,17 @@ fn emit_fungsi_arm64(out: &mut String, f: &FungsiIr, label_string: &HashMap<Stri
                 }
 
                 Instruksi::Simpan { nilai, penunjuk } => {
-                    let loc_val = format_lokasi_arm64(*nilai, &regalloc);
-                    let loc_ptr = format_lokasi_arm64(*penunjuk, &regalloc);
+                    let loc_val = format_lokasi_arm64(*nilai, &layout);
+                    let loc_ptr = format_lokasi_arm64(*penunjuk, &layout);
                     emit_muat_ke_reg_arm64(out, &loc_val, "x0");
                     emit_muat_ke_reg_arm64(out, &loc_ptr, "x1");
                     writeln!(out, "\tstr x0, [x1]").unwrap();
                 }
 
                 Instruksi::AksesBidang { struktur, indeks } => {
-                    let loc_struk = format_lokasi_arm64(*struktur, &regalloc);
+                    let loc_struk = format_lokasi_arm64(*struktur, &layout);
                     let dest = hasil
-                        .map(|r| format_lokasi_arm64(r, &regalloc))
+                        .map(|r| format_lokasi_arm64(r, &layout))
                         .unwrap_or_else(|| "x0".to_string());
                     let offset = (*indeks * 8) as i64;
                     emit_muat_ke_reg_arm64(out, &loc_struk, "x0");
@@ -276,10 +367,10 @@ fn emit_fungsi_arm64(out: &mut String, f: &FungsiIr, label_string: &HashMap<Stri
                 }
 
                 Instruksi::AksesIndeks { target, indeks } => {
-                    let loc_target = format_lokasi_arm64(*target, &regalloc);
-                    let loc_idx = format_lokasi_arm64(*indeks, &regalloc);
+                    let loc_target = format_lokasi_arm64(*target, &layout);
+                    let loc_idx = format_lokasi_arm64(*indeks, &layout);
                     let dest = hasil
-                        .map(|r| format_lokasi_arm64(r, &regalloc))
+                        .map(|r| format_lokasi_arm64(r, &layout))
                         .unwrap_or_else(|| "x0".to_string());
                     emit_muat_ke_reg_arm64(out, &loc_target, "x0");
                     emit_muat_ke_reg_arm64(out, &loc_idx, "x1");
@@ -288,9 +379,9 @@ fn emit_fungsi_arm64(out: &mut String, f: &FungsiIr, label_string: &HashMap<Stri
                 }
 
                 Instruksi::Cast { asal, .. } => {
-                    let loc_asal = format_lokasi_arm64(*asal, &regalloc);
+                    let loc_asal = format_lokasi_arm64(*asal, &layout);
                     let dest = hasil
-                        .map(|r| format_lokasi_arm64(r, &regalloc))
+                        .map(|r| format_lokasi_arm64(r, &layout))
                         .unwrap_or_else(|| "x0".to_string());
                     emit_muat_ke_reg_arm64(out, &loc_asal, "x0");
                     emit_simpan_nilai_arm64(out, "", &dest);
@@ -299,9 +390,9 @@ fn emit_fungsi_arm64(out: &mut String, f: &FungsiIr, label_string: &HashMap<Stri
                 Instruksi::Panggil { fungsi, argumen, .. } => {
                     if fungsi == "komo_rt_format_teks" {
                         if let Some(res) = hasil {
-                            let dest = format_lokasi_arm64(*res, &regalloc);
+                            let dest = format_lokasi_arm64(*res, &layout);
                             if let Some(first_arg) = argumen.first() {
-                                let loc = format_lokasi_arm64(*first_arg, &regalloc);
+                                let loc = format_lokasi_arm64(*first_arg, &layout);
                                 emit_muat_ke_reg_arm64(out, &loc, "x0");
                                 emit_simpan_nilai_arm64(out, "", &dest);
                             }
@@ -311,7 +402,7 @@ fn emit_fungsi_arm64(out: &mut String, f: &FungsiIr, label_string: &HashMap<Stri
 
                     for (i, arg) in argumen.iter().enumerate() {
                         if i < REG_PARAMETER_ARM64.len() {
-                            let loc_arg = format_lokasi_arm64(*arg, &regalloc);
+                            let loc_arg = format_lokasi_arm64(*arg, &layout);
                             let target_reg = REG_PARAMETER_ARM64[i];
                             emit_muat_ke_reg_arm64(out, &loc_arg, target_reg.sebagai_str());
                         }
@@ -328,7 +419,7 @@ fn emit_fungsi_arm64(out: &mut String, f: &FungsiIr, label_string: &HashMap<Stri
                     writeln!(out, "\tbl {}", nama_panggil.replace('.', "_")).unwrap();
 
                     if let Some(res) = hasil {
-                        let dest = format_lokasi_arm64(*res, &regalloc);
+                        let dest = format_lokasi_arm64(*res, &layout);
                         emit_simpan_nilai_arm64(out, "", &dest);
                     }
                 }
@@ -338,6 +429,7 @@ fn emit_fungsi_arm64(out: &mut String, f: &FungsiIr, label_string: &HashMap<Stri
         if let Some(term) = &b.terminator {
             match term {
                 Terminator::Lompat(target) => {
+                    emit_resolusi_phi_arm64(out, f, b.id, *target, &layout);
                     writeln!(out, "\tb .L_arm_{}_{}", nama_asm, target.0).unwrap();
                 }
                 Terminator::Cabang {
@@ -345,20 +437,24 @@ fn emit_fungsi_arm64(out: &mut String, f: &FungsiIr, label_string: &HashMap<Stri
                     jika_benar,
                     jika_salah,
                 } => {
-                    let loc_cond = format_lokasi_arm64(*kondisi, &regalloc);
+                    let loc_cond = format_lokasi_arm64(*kondisi, &layout);
                     emit_muat_ke_reg_arm64(out, &loc_cond, "x0");
-                    writeln!(out, "\tcbnz x0, .L_arm_{}_{}", nama_asm, jika_benar.0).unwrap();
+                    writeln!(out, "\tcbnz x0, .L_arm_cabang_benar_{}_{}", nama_asm, b.id.0).unwrap();
+                    emit_resolusi_phi_arm64(out, f, b.id, *jika_salah, &layout);
                     writeln!(out, "\tb .L_arm_{}_{}", nama_asm, jika_salah.0).unwrap();
+                    writeln!(out, ".L_arm_cabang_benar_{}_{}:", nama_asm, b.id.0).unwrap();
+                    emit_resolusi_phi_arm64(out, f, b.id, *jika_benar, &layout);
+                    writeln!(out, "\tb .L_arm_{}_{}", nama_asm, jika_benar.0).unwrap();
                 }
                 Terminator::Kembali(Some(val)) => {
-                    let loc_val = format_lokasi_arm64(*val, &regalloc);
+                    let loc_val = format_lokasi_arm64(*val, &layout);
                     emit_muat_ke_reg_arm64(out, &loc_val, "x0");
-                    writeln!(out, "\tldp x29, x30, [sp], {}", frame_size).unwrap();
+                    writeln!(out, "\tldp x29, x30, [sp], {}", layout.frame_size).unwrap();
                     writeln!(out, "\tret").unwrap();
                 }
                 Terminator::Kembali(None) => {
                     writeln!(out, "\tmov x0, xzr").unwrap();
-                    writeln!(out, "\tldp x29, x30, [sp], {}", frame_size).unwrap();
+                    writeln!(out, "\tldp x29, x30, [sp], {}", layout.frame_size).unwrap();
                     writeln!(out, "\tret").unwrap();
                 }
                 Terminator::TidakBisa(_) => {
@@ -369,42 +465,4 @@ fn emit_fungsi_arm64(out: &mut String, f: &FungsiIr, label_string: &HashMap<Stri
     }
 
     writeln!(out).unwrap();
-}
-
-fn format_lokasi_arm64(id: IdNilai, regalloc: &HasilAlokasiRegister) -> String {
-    match regalloc.peta_lokasi.get(&id) {
-        Some(LokasiNilai::Register(idx)) => {
-            let reg = POOL_REGISTER_ALOKASI_ARM64[*idx % POOL_REGISTER_ALOKASI_ARM64.len()];
-            reg.sebagai_str().to_string()
-        }
-        Some(LokasiNilai::Stack(offset)) => {
-            format!("[x29, #{}]", offset)
-        }
-        None => "[x29, #-16]".to_string(),
-    }
-}
-
-fn emit_muat_ke_reg_arm64(out: &mut String, src_loc: &str, target_reg: &str) {
-    if src_loc == target_reg {
-        return;
-    }
-    if src_loc.starts_with('[') {
-        writeln!(out, "\tldr {}, {}", target_reg, src_loc).unwrap();
-    } else {
-        writeln!(out, "\tmov {}, {}", target_reg, src_loc).unwrap();
-    }
-}
-
-fn emit_simpan_nilai_arm64(out: &mut String, prefix_inst: &str, dest_loc: &str) {
-    if !prefix_inst.is_empty() {
-        writeln!(out, "{}", prefix_inst).unwrap();
-    }
-    if dest_loc == "x0" {
-        return;
-    }
-    if dest_loc.starts_with('[') {
-        writeln!(out, "\tstr x0, {}", dest_loc).unwrap();
-    } else {
-        writeln!(out, "\tmov {}, x0", dest_loc).unwrap();
-    }
 }
