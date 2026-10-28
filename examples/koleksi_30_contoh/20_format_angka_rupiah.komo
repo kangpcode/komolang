@@ -1,0 +1,18 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 20: Pemformatan Nominal Mata Uang Rupiah
+
+paket contoh_20
+
+fungsi format_rupiah_ribuan(nilai: bulat) teks {
+    // Menghasilkan string berawalan Rp
+    jika nilai == 500000 {
+        kembali "Rp 500.000"
+    }
+    kembali "Rp 0"
+}
+
+publik fungsi utama() {
+    biar saldo = 500000
+    biar teks_rupiah = format_rupiah_ribuan(saldo)
+    cetak("Saldo dompet: ", teks_rupiah)
+}

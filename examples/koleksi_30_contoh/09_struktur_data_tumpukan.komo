@@ -1,0 +1,39 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 09: Struktur Data Tumpukan (Stack LIFO)
+
+paket contoh_09
+
+struktur Tumpukan {
+    elemen: [bulat],
+    ukuran: bulat,
+}
+
+impl Tumpukan {
+    fungsi baru() Tumpukan {
+        kembali Tumpukan {
+            elemen: [0, 0, 0, 0, 0, 0, 0, 0],
+            ukuran: 0,
+        }
+    }
+
+    fungsi dorong(diri: pinjam_var Tumpukan, nilai: bulat) {
+        diri.elemen[diri.ukuran] = nilai
+        diri.ukuran += 1
+    }
+
+    fungsi tarik(diri: pinjam_var Tumpukan) bulat {
+        jika diri.ukuran <= 0 {
+            kembali 0
+        }
+        diri.ukuran -= 1
+        kembali diri.elemen[diri.ukuran]
+    }
+}
+
+publik fungsi utama() {
+    var s = Tumpukan::baru()
+    s.dorong(10)
+    s.dorong(20)
+    biar atas = s.tarik()
+    cetak("Elemen teratas tumpukan: ", atas)
+}

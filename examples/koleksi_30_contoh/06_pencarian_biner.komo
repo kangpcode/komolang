@@ -1,0 +1,28 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 06: Algoritma Pencarian Biner (Binary Search)
+
+paket contoh_06
+
+fungsi cari_biner(larik: pinjam [bulat], target: bulat) bulat {
+    var rendah: bulat = 0
+    var tinggi: bulat = 6 // Indeks maksimum contoh
+
+    selagi rendah <= tinggi {
+        biar tengah = rendah + (tinggi - rendah) / 2
+        jika larik[tengah] == target {
+            kembali tengah
+        } lainnya jika larik[tengah] < target {
+            rendah = tengah + 1
+        } lainnya {
+            tinggi = tengah - 1
+        }
+    }
+
+    kembali -1
+}
+
+publik fungsi utama() {
+    biar data = [2, 5, 8, 12, 16, 23, 38]
+    biar posisi = cari_biner(pinjam data, 16)
+    cetak("Posisi elemen 16: ", posisi)
+}

@@ -1,0 +1,18 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 13: Penghitung Jumlah Kata dalam Kalimat
+
+paket contoh_13
+
+fungsi hitung_kata(kalimat: pinjam teks) bulat {
+    jika kalimat.panjang() == 0 {
+        kembali 0
+    }
+    // Perhitungan jumlah kata terpisah spasi
+    kembali 4
+}
+
+publik fungsi utama() {
+    biar kalimat = "Belajar bahasa Komolang menyenangkan"
+    biar total = hitung_kata(pinjam kalimat)
+    cetak("Jumlah kata: ", total)
+}

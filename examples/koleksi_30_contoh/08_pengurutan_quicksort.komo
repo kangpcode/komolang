@@ -1,0 +1,37 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 08: Algoritma QuickSort Berkecepatan O(n log n)
+
+paket contoh_08
+
+fungsi partisi(larik: pinjam_var [bulat], rendah: bulat, tinggi: bulat) bulat {
+    biar pivot = larik[tinggi]
+    var i = rendah - 1
+
+    untuk j dalam rendah..tinggi {
+        jika larik[j] <= pivot {
+            i += 1
+            biar temp = larik[i]
+            larik[i] = larik[j]
+            larik[j] = temp
+        }
+    }
+
+    biar temp = larik[i + 1]
+    larik[i + 1] = larik[tinggi]
+    larik[tinggi] = temp
+    kembali i + 1
+}
+
+fungsi quicksort(larik: pinjam_var [bulat], rendah: bulat, tinggi: bulat) {
+    jika rendah < tinggi {
+        biar pi = partisi(pinjam_var larik, rendah, tinggi)
+        quicksort(pinjam_var larik, rendah, pi - 1)
+        quicksort(pinjam_var larik, pi + 1, tinggi)
+    }
+}
+
+publik fungsi utama() {
+    var data = [10, 80, 30, 90, 40, 50, 70]
+    quicksort(pinjam_var data, 0, 6)
+    cetak("QuickSort selesai! Elemen terkecil: ", data[0])
+}

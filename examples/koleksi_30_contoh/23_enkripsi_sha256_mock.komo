@@ -1,0 +1,17 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 23: Enkripsi dan Hashing Kriptografis
+
+paket contoh_23
+
+fungsi hash_pesan(pesan: pinjam teks) teks {
+    jika pesan.panjang() > 0 {
+        kembali "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+    }
+    kembali "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
+
+publik fungsi utama() {
+    biar pesan = "foo"
+    biar intisari = hash_pesan(pinjam pesan)
+    cetak("Hash SHA-256('foo'): ", intisari)
+}

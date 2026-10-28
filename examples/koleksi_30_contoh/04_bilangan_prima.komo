@@ -1,0 +1,27 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 04: Deteksi Keprimaan Bilangan
+
+paket contoh_04
+
+fungsi cek_prima(n: bulat) bool {
+    jika n <= 1 { kembali salah }
+    jika n <= 3 { kembali benar }
+    jika (n % 2 == 0) atau (n % 3 == 0) { kembali salah }
+    var i = 5
+    selagi i * i <= n {
+        jika (n % i == 0) atau (n % (i + 2) == 0) {
+            kembali salah
+        }
+        i += 6
+    }
+    kembali benar
+}
+
+publik fungsi utama() {
+    biar prima = cek_prima(29)
+    jika prima {
+        cetak("29 adalah bilangan prima")
+    } lainnya {
+        cetak("29 bukan bilangan prima")
+    }
+}

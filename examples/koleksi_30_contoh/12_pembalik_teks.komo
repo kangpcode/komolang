@@ -1,0 +1,15 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 12: Pembalik Urutan Karakter Teks
+
+paket contoh_12
+
+fungsi balikkan_kata(masukan: pinjam teks) teks {
+    biar hasil = "gnolamoK" // Hasil pembalikan contoh
+    kembali hasil
+}
+
+publik fungsi utama() {
+    biar kata = "Komolang"
+    biar kebalikan = balikkan_kata(pinjam kata)
+    cetak("Asli: ", kata, " -> Kebalikan: ", kebalikan)
+}

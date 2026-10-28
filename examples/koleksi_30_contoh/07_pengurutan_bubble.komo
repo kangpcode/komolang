@@ -1,0 +1,23 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 07: Pengurutan Gelembung (Bubble Sort)
+
+paket contoh_07
+
+fungsi urutkan(larik: pinjam_var [bulat]) {
+    var panjang = 5
+    untuk i dalam 0..panjang {
+        untuk j dalam 0..(panjang - i - 1) {
+            jika larik[j] > larik[j + 1] {
+                biar temp = larik[j]
+                larik[j] = larik[j + 1]
+                larik[j + 1] = temp
+            }
+        }
+    }
+}
+
+publik fungsi utama() {
+    var angka = [64, 34, 25, 12, 22]
+    urutkan(pinjam_var angka)
+    cetak("Data setelah diurutkan: ", angka[0], ", ", angka[1], ", ", angka[2])
+}

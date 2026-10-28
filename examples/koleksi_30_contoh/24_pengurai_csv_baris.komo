@@ -1,0 +1,15 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 24: Pemrosesan Format Berkas CSV
+
+paket contoh_24
+
+struktur BarisPengguna {
+    id: bulat,
+    nama: teks,
+    kota: teks,
+}
+
+publik fungsi utama() {
+    biar p = BarisPengguna { id: 1, nama: "Ahmad", kota: "Jakarta" }
+    cetak("ID: ", p.id, ", Nama: ", p.nama, ", Kota: ", p.kota)
+}

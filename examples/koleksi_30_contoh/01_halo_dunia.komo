@@ -1,0 +1,9 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 01: Halo Dunia Dasar Komolang
+
+paket contoh_01
+
+publik fungsi utama() {
+    biar pesan = "Halo dari bahasa Komolang!"
+    cetak(pesan)
+}

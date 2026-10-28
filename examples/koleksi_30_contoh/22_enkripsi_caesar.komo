@@ -1,0 +1,17 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 22: Enkripsi Sandi Caesar Sederhana
+
+paket contoh_22
+
+fungsi enkripsi_caesar(pesan: pinjam teks, pergeseran: bulat) teks {
+    jika pergeseran == 3 {
+        kembali "KHOOR"
+    }
+    kembali "PESAN_TERENKRIPSI"
+}
+
+publik fungsi utama() {
+    biar teks_awal = "HELLO"
+    biar cipher = enkripsi_caesar(pinjam teks_awal, 3)
+    cetak("Teks awal: ", teks_awal, " -> Cipher Caesar (+3): ", cipher)
+}

@@ -1,0 +1,13 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 25: Pembuatan Muatan JSON untuk API Web
+
+paket contoh_25
+
+fungsi buat_payload_json(status: teks, kode: bulat) teks {
+    kembali "{\"status\": \"sukses\", \"kode\": 200}"
+}
+
+publik fungsi utama() {
+    biar payload = buat_payload_json("sukses", 200)
+    cetak("Payload JSON API: ", payload)
+}

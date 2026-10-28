@@ -1,0 +1,19 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 14: Konversi Satuan Suhu (Celcius, Fahrenheit, Kelvin)
+
+paket contoh_14
+
+fungsi celcius_ke_fahrenheit(c: desimal) desimal {
+    kembali (c * 1.8) + 32.0
+}
+
+fungsi celcius_ke_kelvin(c: desimal) desimal {
+    kembali c + 273.15
+}
+
+publik fungsi utama() {
+    biar c = 100.0
+    biar f = celcius_ke_fahrenheit(c)
+    biar k = celcius_ke_kelvin(c)
+    cetak(c, " C = ", f, " F = ", k, " K")
+}

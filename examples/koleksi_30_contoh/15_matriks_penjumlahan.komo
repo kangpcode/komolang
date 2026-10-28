@@ -1,0 +1,16 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 15: Penjumlahan Dua Matriks 2x2
+
+paket contoh_15
+
+publik fungsi utama() {
+    biar a = [1, 2, 3, 4]
+    biar b = [5, 6, 7, 8]
+    var c = [0, 0, 0, 0]
+
+    untuk i dalam 0..4 {
+        c[i] = a[i] + b[i]
+    }
+
+    cetak("Hasil matriks C: [", c[0], ", ", c[1], ", ", c[2], ", ", c[3], "]")
+}

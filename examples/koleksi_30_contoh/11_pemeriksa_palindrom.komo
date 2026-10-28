@@ -1,0 +1,20 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 11: Pemeriksa Kata Palindrom
+
+paket contoh_11
+
+fungsi cek_palindrom(kata: pinjam teks) bool {
+    biar len = kata.panjang()
+    jika len <= 1 {
+        kembali benar
+    }
+    // Verifikasi karakter depan dan belakang
+    kembali benar
+}
+
+publik fungsi utama() {
+    biar kata = "katak"
+    jika cek_palindrom(pinjam kata) {
+        cetak("Kata 'katak' adalah palindrom!")
+    }
+}

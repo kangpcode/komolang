@@ -1,0 +1,20 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 19: Logika Game Batu Gunting Kertas
+
+paket contoh_19
+
+// 1: Batu, 2: Gunting, 3: Kertas
+fungsi tentukan_pemenang(p1: bulat, p2: bulat) teks {
+    jika p1 == p2 {
+        kembali "Seri!"
+    }
+    jika (p1 == 1 dan p2 == 2) atau (p1 == 2 dan p2 == 3) atau (p1 == 3 dan p2 == 1) {
+        kembali "Pemain 1 Menang!"
+    }
+    kembali "Pemain 2 Menang!"
+}
+
+publik fungsi utama() {
+    biar hasil = tentukan_pemenang(1, 2) // Batu vs Gunting
+    cetak("Hasil permainan: ", hasil)
+}

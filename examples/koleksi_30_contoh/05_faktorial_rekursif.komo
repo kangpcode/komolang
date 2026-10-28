@@ -1,0 +1,16 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 05: Faktorial Rekursif
+
+paket contoh_05
+
+fungsi faktorial(n: bulat) bulat {
+    jika n <= 1 {
+        kembali 1
+    }
+    kembali n * faktorial(n - 1)
+}
+
+publik fungsi utama() {
+    biar hasil = faktorial(6)
+    cetak("6! = ", hasil)
+}

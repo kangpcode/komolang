@@ -1,0 +1,13 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 17: Generator Tabel Perkalian Matematika
+
+paket contoh_17
+
+publik fungsi utama() {
+    biar basis = 7
+    cetak("--- Tabel Perkalian ", basis, " ---")
+    untuk i dalam 1..=5 {
+        biar hasil = basis * i
+        cetak(basis, " x ", i, " = ", hasil)
+    }
+}

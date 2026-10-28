@@ -1,0 +1,22 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 03: Algoritma Fibonacci Iteratif O(n)
+
+paket contoh_03
+
+fungsi fibonacci(n: bulat) bulat {
+    jika n <= 0 { kembali 0 }
+    jika n == 1 { kembali 1 }
+    var a = 0
+    var b = 1
+    untuk _ dalam 2..=n {
+        biar c = a + b
+        a = b
+        b = c
+    }
+    kembali b
+}
+
+publik fungsi utama() {
+    biar hasil = fibonacci(10)
+    cetak("Fibonacci ke-10: ", hasil)
+}

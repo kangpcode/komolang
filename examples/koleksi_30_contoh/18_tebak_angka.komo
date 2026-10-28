@@ -1,0 +1,24 @@
+// Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+//! Contoh 18: Logika Evaluasi Permainan Tebak Angka
+
+paket contoh_18
+
+fungsi evaluasi_tebakan(tebakan: bulat, angka_rahasia: bulat) teks {
+    jika tebakan < angka_rahasia {
+        kembali "Terlalu rendah!"
+    } lainnya jika tebakan > angka_rahasia {
+        kembali "Terlalu tinggi!"
+    } lainnya {
+        kembali "Tepat sekali! Anda menang!"
+    }
+}
+
+publik fungsi utama() {
+    biar rahasia = 42
+    biar hasil1 = evaluasi_tebakan(20, rahasia)
+    biar hasil2 = evaluasi_tebakan(50, rahasia)
+    biar hasil3 = evaluasi_tebakan(42, rahasia)
+    cetak(hasil1)
+    cetak(hasil2)
+    cetak(hasil3)
+}
