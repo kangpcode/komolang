@@ -6,4 +6,9 @@ edition.workspace = true
 license.workspace = true
 description = "High performance minimal runtime for Komolang (memory, green tasks, panic handling)"
 
+[features]
+default = ["std"]
+std = []
+tanpa_std = []
+
 [dependencies]

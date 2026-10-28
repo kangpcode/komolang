@@ -1,12 +1,37 @@
 // Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
 
-//! `komo_runtime` menyediakan sistem runtime esensial untuk Komolang:
-//! manajemen memori berbasis arena, penanganan kepanikan (panic), dan penataan task ringan.
+//! `komo_runtime` menyediakan sistem runtime esensial untuk Komolang (Tahap 5):
+//! - **Manajemen Memori:** Alokator Region/Arena berantai tanpa jeda GC (`AlokatorArena`), penataan fungsi `tunda` LIFO (`TumpukanTunda`, `PenjagaTunda`).
+//! - **Konkurensi & Green Tasks:** Multi-threaded Work-Stealing `Scheduler`, komunikasi antartask via `saluran` (channels MPSC), dan primitif sinkronisasi (`Kunci`, `RwKunci`, `Pemberitahu`).
+//! - **Penanganan Kepanikan (Panic):** Pelacakan jejak tumpukan (stack trace) berbahasa Indonesia, deteksi overflow matematika & batas larik, serta pemulihan terisolasi (`tangkap_kepanikan`).
+//! - **Dukungan FFI & Embedded:** Simbol ekspor C ABI dan dukungan feature mode `tanpa_std`.
+
+pub mod ffi;
+pub mod konkurensi;
+pub mod memori;
+pub mod panik;
+
+// Ekspor publik memori
+pub use memori::{AlokatorArena, PenjagaTunda, TumpukanTunda};
+
+// Ekspor publik konkurensi
+pub use konkurensi::{
+    buat_saluran_tak_terbatas, buat_saluran_terbatas, GalatPenerimaan, GalatSaluran, KanalPenerima,
+    KanalPengirim, Kunci, Pemberitahu, PenjagaBaca, PenjagaKunci, PenjagaTulis, RwKunci, Scheduler,
+};
+
+// Ekspor publik panik & deteksi batas
+pub use panik::{
+    laporkan_kepanikan, periksa_indeks_larik, periksa_overflow_kali, periksa_overflow_kurang,
+    periksa_overflow_tambah, periksa_pembagian_nol_bulat, tangkap_kepanikan, BingkaiJejak,
+    JejakTumpukan, KesalahanRuntime,
+};
 
 /// Status inisialisasi runtime Komolang.
 pub struct KonteksRuntime {
     pub versi: &'static str,
     pub aktif: bool,
+    pub scheduler: Option<Scheduler>,
 }
 
 impl KonteksRuntime {
@@ -14,10 +39,22 @@ impl KonteksRuntime {
         Self {
             versi: env!("CARGO_PKG_VERSION"),
             aktif: true,
+            scheduler: None,
         }
     }
 
+    /// Mengaktifkan scheduler green tasks pada konteks runtime.
+    pub fn aktifkan_scheduler(&mut self) -> &Scheduler {
+        if self.scheduler.is_none() {
+            self.scheduler = Some(Scheduler::bawaan());
+        }
+        self.scheduler.as_ref().unwrap()
+    }
+
     pub fn hentikan(&mut self) {
+        if let Some(s) = self.scheduler.take() {
+            s.hentikan();
+        }
         self.aktif = false;
     }
 }
@@ -28,44 +65,9 @@ impl Default for KonteksRuntime {
     }
 }
 
-/// Alokator berbasis arena / region sederhana untuk alokasi terkelompok tanpa GC.
-pub struct AlokatorArena {
-    buffer: Vec<u8>,
-    kapasitas: usize,
-}
-
-impl AlokatorArena {
-    pub fn dengan_kapasitas(kapasitas: usize) -> Self {
-        Self {
-            buffer: Vec::with_capacity(kapasitas),
-            kapasitas,
-        }
-    }
-
-    pub fn alokasikan(&mut self, data: &[u8]) -> Result<usize, &'static str> {
-        if self.buffer.len() + data.len() > self.kapasitas {
-            return Err("Kapasitas alokator arena terlampaui");
-        }
-        let offset = self.buffer.len();
-        self.buffer.extend_from_slice(data);
-        Ok(offset)
-    }
-
-    pub fn reset(&mut self) {
-        self.buffer.clear();
-    }
-
-    pub fn jumlah_terpakai(&self) -> usize {
-        self.buffer.len()
-    }
-}
-
-/// Penanganan kepanikan (panic handler) resmi Komolang dengan pesan berbahasa Indonesia.
+/// Fungsi pembantu kompatibilitas untuk menghasilkan string kepanikan.
 pub fn tangani_kepanikan(alasan: &str, berkas: &str, baris: usize, kolom: usize) -> String {
-    format!(
-        "🚨 KEPANIKAN RUNTIME KOMOLANG:\n  Alasan: {}\n  Lokasi: {}:{}:{}\n  Catatan: Silakan laporkan perilaku ini jika merupakan bug internal.",
-        alasan, berkas, baris, kolom
-    )
+    laporkan_kepanikan(alasan, "komo_main", berkas, baris, kolom)
 }
 
 #[cfg(test)]
@@ -73,29 +75,23 @@ mod tests {
     use super::*;
 
     #[test]
-    fn tes_inisialisasi_runtime() {
+    fn tes_inisialisasi_dan_scheduler_konteks_runtime() {
         let mut rt = KonteksRuntime::baru();
         assert!(rt.aktif);
+        assert!(!rt.versi.is_empty());
+
+        let sched = rt.aktifkan_scheduler();
+        assert!(sched.jumlah_pekerja() >= 1);
+
         rt.hentikan();
         assert!(!rt.aktif);
     }
 
     #[test]
-    fn tes_alokator_arena() {
-        let mut arena = AlokatorArena::dengan_kapasitas(1024);
-        let offset1 = arena.alokasikan(b"Komolang").expect("Alokasi berhasil");
-        assert_eq!(offset1, 0);
-        assert_eq!(arena.jumlah_terpakai(), 8);
-
-        arena.reset();
-        assert_eq!(arena.jumlah_terpakai(), 0);
-    }
-
-    #[test]
-    fn tes_pesan_kepanikan() {
-        let pesan = tangani_kepanikan("Pembagian dengan nol", "utama.komo", 12, 5);
+    fn tes_kompatibilitas_tangani_kepanikan() {
+        let pesan = tangani_kepanikan("Akses memori ilegal", "src/utama.komo", 15, 4);
         assert!(pesan.contains("KEPANIKAN RUNTIME KOMOLANG"));
-        assert!(pesan.contains("Pembagian dengan nol"));
-        assert!(pesan.contains("utama.komo:12:5"));
+        assert!(pesan.contains("Akses memori ilegal"));
+        assert!(pesan.contains("src/utama.komo:15:4"));
     }
 }

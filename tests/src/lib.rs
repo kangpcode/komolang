@@ -26,6 +26,8 @@ mod tes_semantik_valid;
 mod tes_codegen_native;
 #[cfg(test)]
 mod tes_codegen_asm;
+#[cfg(test)]
+mod tes_runtime;
 
 #[cfg(test)]
 mod tests {

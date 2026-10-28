@@ -196,10 +196,10 @@ fungsi utama() {
 
 ### Tahap 5 — Runtime
 
-- [ ] Manajemen memori: allocator cepat, arena/region, `tunda`, tanpa GC pause.
-- [ ] Scheduler task ringan (work-stealing) + `saluran` (channel) + sinkronisasi.
-- [ ] Penanganan panic, stack trace berbahasa Indonesia, deteksi overflow.
-- [ ] Runtime sekecil mungkin, bisa dimatikan untuk mode embedded (`tanpa_std`).
+- [x] Manajemen memori: allocator cepat, arena/region, `tunda`, tanpa GC pause.
+- [x] Scheduler task ringan (work-stealing) + `saluran` (channel) + sinkronisasi.
+- [x] Penanganan panic, stack trace berbahasa Indonesia, deteksi overflow.
+- [x] Runtime sekecil mungkin, bisa dimatikan untuk mode embedded (`tanpa_std`).
 
 * **Selesai bila:** stress test konkurensi dan memori lulus (termasuk sanitizer/Miri-style check) tanpa kebocoran.
 
