@@ -18,3 +18,4 @@ komo_codegen = { workspace = true }
 komo_asm = { workspace = true }
 komo = { workspace = true }
 komo_pkg = { workspace = true }
+komo_web = { workspace = true }

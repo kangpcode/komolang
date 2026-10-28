@@ -164,6 +164,28 @@ fn main() {
                 process::exit(1);
             }
         }
+        "layani" => {
+            let jalur = if args.len() >= 3 && !args[2].starts_with('-') {
+                args[2].as_str()
+            } else {
+                "."
+            };
+            let mut port = 8080u16;
+            let mut hot_reload = false;
+            for arg in &args {
+                if arg.starts_with("--port=") {
+                    if let Ok(p) = arg["--port=".len()..].parse::<u16>() {
+                        port = p;
+                    }
+                } else if arg == "--hot-reload" {
+                    hot_reload = true;
+                }
+            }
+            if let Err(e) = perintah::jalankan_server_layani(jalur, port, hot_reload) {
+                eprintln!("❌ {}", e);
+                process::exit(1);
+            }
+        }
         "lsp" => {
             lsp::jalankan_server_lsp();
         }
@@ -306,6 +328,7 @@ fn tampilkan_bantuan() {
     println!("  dok [jalur] [-o dir]    Menghasilkan dokumentasi kode (Markdown & HTML)");
     println!("  repl                    Menjalankan sesi Read-Eval-Print Loop interaktif");
     println!("  debug <berkas.komo>     Inspeksi mendalam AST, tabel simbol semantik, dan KIR SSA");
+    println!("  layani [jalur]          Menjalankan server web KomoWeb dengan hot reload (--port=8080)");
     println!("  lsp                     Menjalankan server Language Server Protocol (stdin/stdout)");
     println!();
     println!("Perintah Kompilasi & Eksekusi:");

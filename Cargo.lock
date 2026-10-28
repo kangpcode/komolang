@@ -312,6 +312,7 @@ dependencies = [
  "komo_pkg",
  "komo_runtime",
  "komo_sema",
+ "komo_web",
 ]
 
 [[package]]
@@ -407,7 +408,12 @@ dependencies = [
  "komo_pkg",
  "komo_runtime",
  "komo_sema",
+ "komo_web",
 ]
+
+[[package]]
+name = "komo_web"
+version = "0.1.0"
 
 [[package]]
 name = "libc"

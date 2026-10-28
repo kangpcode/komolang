@@ -234,10 +234,10 @@ fungsi utama() {
 
 ### Tahap 9 — Webserver & Framework Web (`komoweb`)
 
-- [ ] Server HTTP/1.1 dan HTTP/2, TLS, router, middleware, static file, WebSocket.
-- [ ] Templating, session, CORS, rate limiting, logging terstruktur.
-- [ ] Perintah `komo layani` untuk server pengembangan dengan hot reload.
-- [ ] Benchmark vs Go/Rust/Node pada beban yang sama (dipublikasikan apa adanya).
+- [x] Server HTTP/1.1 dan HTTP/2, TLS, router, middleware, static file, WebSocket.
+- [x] Templating, session, CORS, rate limiting, logging terstruktur.
+- [x] Perintah `komo layani` untuk server pengembangan dengan hot reload.
+- [x] Benchmark vs Go/Rust/Node pada beban yang sama (dipublikasikan apa adanya).
 
 * **Selesai bila:** aplikasi REST + WebSocket contoh stabil di bawah uji beban.
 

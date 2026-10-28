@@ -1,0 +1,11 @@
+# Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
+
+[package]
+name = "komo_web"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "High-performance web server and HTTP framework for the Komolang programming language"
+
+[dependencies]
