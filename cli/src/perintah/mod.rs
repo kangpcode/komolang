@@ -16,6 +16,9 @@ pub use bench::jalankan_benchmark;
 pub use debug::debug_berkas;
 pub use dok::buat_dokumentasi;
 pub use format::format_kode;
-pub use paket::{bersihkan_target, perbarui_dependensi, rilis_aplikasi, tambah_dependensi};
+pub use paket::{
+    bersihkan_target, cari_paket, instal_dependensi, perbarui_dependensi, rilis_aplikasi,
+    tambah_dependensi, terbitkan_paket,
+};
 pub use repl::jalankan_repl;
 pub use uji::jalankan_pengujian;

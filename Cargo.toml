@@ -12,6 +12,7 @@ members = [
     "compiler/komo_codegen",
     "compiler/komo_asm",
     "runtime/komo_runtime",
+    "pkg/komo_pkg",
     "tests",
 ]
 resolver = "2"
@@ -34,5 +35,6 @@ komo_parser = { path = "compiler/komo_parser" }
 komo_runtime = { path = "runtime/komo_runtime" }
 komo_sema = { path = "compiler/komo_sema" }
 komo = { path = "cli" }
+komo_pkg = { path = "pkg/komo_pkg" }
 
 

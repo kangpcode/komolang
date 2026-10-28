@@ -32,6 +32,8 @@ mod tes_runtime;
 mod tes_std;
 #[cfg(test)]
 mod tes_cli_tooling;
+#[cfg(test)]
+mod tes_paket_registry;
 
 #[cfg(test)]
 mod tests {

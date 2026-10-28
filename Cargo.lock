@@ -309,6 +309,7 @@ dependencies = [
  "komo_ir",
  "komo_lexer",
  "komo_parser",
+ "komo_pkg",
  "komo_runtime",
  "komo_sema",
 ]
@@ -376,6 +377,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "komo_pkg"
+version = "0.1.0"
+
+[[package]]
 name = "komo_runtime"
 version = "0.1.0"
 
@@ -399,6 +404,7 @@ dependencies = [
  "komo_ir",
  "komo_lexer",
  "komo_parser",
+ "komo_pkg",
  "komo_runtime",
  "komo_sema",
 ]

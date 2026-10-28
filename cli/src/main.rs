@@ -130,6 +130,40 @@ fn main() {
                 process::exit(1);
             }
         }
+        "terbit" => {
+            let jalur = if args.len() >= 3 && !args[2].starts_with('-') {
+                args[2].as_str()
+            } else {
+                "."
+            };
+            let mut token_opt = None;
+            for arg in &args {
+                if arg.starts_with("--token=") {
+                    token_opt = Some(&arg["--token=".len()..]);
+                }
+            }
+            if let Err(e) = perintah::terbitkan_paket(jalur, token_opt) {
+                eprintln!("❌ {}", e);
+                process::exit(1);
+            }
+        }
+        "instal" => {
+            if let Err(e) = perintah::instal_dependensi() {
+                eprintln!("❌ {}", e);
+                process::exit(1);
+            }
+        }
+        "cari" => {
+            if args.len() < 3 {
+                eprintln!("Kesalahan: Berikan kata kunci paket yang ingin dicari.");
+                eprintln!("Contoh: komo cari json");
+                process::exit(1);
+            }
+            if let Err(e) = perintah::cari_paket(&args[2]) {
+                eprintln!("❌ {}", e);
+                process::exit(1);
+            }
+        }
         "lsp" => {
             lsp::jalankan_server_lsp();
         }
@@ -256,10 +290,13 @@ fn tampilkan_bantuan() {
     println!("Komolang (Komodo Language) - Kompilator & Kakas Bahasa Pemrograman Asli Indonesia");
     println!("Penggunaan: komo [perintah] [opsi]");
     println!();
-    println!("Perintah Manajemen Proyek:");
+    println!("Perintah Manajemen Proyek & Paket (komopaket):");
     println!("  baru <nama>             Membuat struktur scaffold proyek Komolang baru");
     println!("  tambah <paket>          Menambahkan dependensi paket ke komo.toml");
+    println!("  instal                  Menyelesaikan grafik dependensi dan mengunci di komo.kunci");
     println!("  perbarui                Memperbarui dependensi proyek");
+    println!("  terbit [jalur]          Menerbitkan paket ke registry komopaket (--token=...)");
+    println!("  cari <kueri>            Mencari paket di registry komopaket");
     println!("  bersih                  Membersihkan artefak kompilasi di direktori target/");
     println!();
     println!("Perintah Pengembangan & Kualitas Kode:");

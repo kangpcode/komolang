@@ -225,10 +225,10 @@ fungsi utama() {
 
 ### Tahap 8 — Package Manager & Registry
 
-- [ ] Format `komo.toml` + `komo.kunci` (lockfile) deterministik.
-- [ ] Resolusi dependensi (semver), cache lokal, verifikasi checksum dan tanda tangan.
-- [ ] Registry paket (`komopaket`) + CLI `komo terbit`.
-- [ ] Dukungan workspace/monorepo dan dependensi dari Git.
+- [x] Format `komo.toml` + `komo.kunci` (lockfile) deterministik.
+- [x] Resolusi dependensi (semver), cache lokal, verifikasi checksum dan tanda tangan.
+- [x] Registry paket (`komopaket`) + CLI `komo terbit`.
+- [x] Dukungan workspace/monorepo dan dependensi dari Git.
 
 * **Selesai bila:** paket contoh bisa diterbitkan dan diinstal ulang dengan hasil build identik.
 
