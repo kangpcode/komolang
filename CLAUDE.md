@@ -271,10 +271,10 @@ fungsi utama() {
 
 ### Tahap 13 — Kualitas, Keamanan, Stabilitas
 
-- [ ] Test suite konformansi bahasa, fuzzing compiler, tes regresi kinerja di CI.
-- [ ] Audit keamanan (memori, supply chain paket, sandboxing).
-- [ ] Benchmark suite publik (CPU, memori, startup, ukuran biner) dengan metodologi jelas.
-- [ ] Kebijakan kompatibilitas dan versi (SemVer) + proses RFC.
+- [x] Test suite konformansi bahasa, fuzzing compiler, tes regresi kinerja di CI.
+- [x] Audit keamanan (memori, supply chain paket, sandboxing).
+- [x] Benchmark suite publik (CPU, memori, startup, ukuran biner) dengan metodologi jelas.
+- [x] Kebijakan kompatibilitas dan versi (SemVer) + proses RFC.
 
 * **Selesai bila:** tidak ada bug kritis terbuka dan benchmark terbit dengan angka yang bisa direproduksi.
 

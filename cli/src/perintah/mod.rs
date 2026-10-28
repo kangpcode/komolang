@@ -2,6 +2,7 @@
 
 //! Kumpulan modul perintah resmi untuk kakas antarmuka baris perintah Komolang (`cli`).
 
+pub mod audit;
 pub mod baru;
 pub mod bench;
 pub mod debug;
@@ -14,6 +15,7 @@ pub mod paket;
 pub mod repl;
 pub mod uji;
 
+pub use audit::{audit_proyek, KebijakanSandboxing, LaporanAudit, TingkatKeparahan};
 pub use baru::buat_proyek_baru;
 pub use bench::jalankan_benchmark;
 pub use debug::debug_berkas;

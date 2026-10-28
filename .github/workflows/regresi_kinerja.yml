@@ -1,0 +1,28 @@
+name: Monitoring Regresi Kinerja & Keamanan Komolang
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    # Berjalan setiap malam pukul 00:00 UTC
+    - cron: '0 0 * * *'
+
+jobs:
+  benchmarks-dan-audit:
+    name: Benchmark Regresi & Audit Keamanan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Kode Sumber
+        uses: actions/checkout@v4
+
+      - name: Pasang Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Jalankan Audit Keamanan
+        run: cargo run --bin komo -- audit .
+
+      - name: Jalankan Suite Benchmark Publik
+        run: cargo test --workspace -- tes_bench
+
+      - name: Verifikasi Fuzzing Compiler
+        run: cargo test -p komo_tests -- tes_fuzz

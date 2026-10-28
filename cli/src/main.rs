@@ -201,6 +201,44 @@ fn main() {
                 process::exit(1);
             }
         }
+        "audit" => {
+            let jalur = if args.len() >= 3 && !args[2].starts_with('-') {
+                args[2].as_str()
+            } else {
+                "."
+            };
+            println!("🛡️  Menjalankan audit keamanan dan pemindaian supply chain pada '{}'...", jalur);
+            match perintah::audit_proyek(jalur) {
+                Ok(laporan) => {
+                    println!("📋 Laporan Audit Keamanan Komolang:");
+                    println!("   - Total Berkas Dipindai: {}", laporan.total_berkas);
+                    println!("   - Temuan Kritis       : {}", laporan.jumlah_kritis);
+                    println!("   - Temuan Tinggi       : {}", laporan.jumlah_tinggi);
+                    println!("   - Temuan Peringatan   : {}", laporan.jumlah_peringatan);
+
+                    for t in &laporan.temuan {
+                        let ikon = match t.tingkat {
+                            perintah::TingkatKeparahan::Kritis => "🚨 [KRITIS]",
+                            perintah::TingkatKeparahan::Tinggi => "⚠️  [TINGGI]",
+                            perintah::TingkatKeparahan::Peringatan => "🟡 [PERINGATAN]",
+                            perintah::TingkatKeparahan::Info => "ℹ️  [INFO]",
+                        };
+                        println!("   {} {} ({}:{})", ikon, t.pesan, t.berkas, t.baris);
+                    }
+
+                    if laporan.apakah_aman() {
+                        println!("✅ Audit Keamanan LULUS: Tidak ditemukan kerentanan berisiko tinggi.");
+                    } else {
+                        println!("❌ Audit Keamanan GAGAL: Ditemukan potensi kerentanan keamanan.");
+                        process::exit(1);
+                    }
+                }
+                Err(e) => {
+                    eprintln!("❌ {}", e);
+                    process::exit(1);
+                }
+            }
+        }
         "lsp" => {
             lsp::jalankan_server_lsp();
         }
@@ -363,6 +401,7 @@ fn tampilkan_bantuan() {
     println!("  uji [jalur]             Menjalankan suite pengujian otomatis fungsi tes_*");
     println!("  bench [jalur]           Menjalankan tolok ukur (benchmark) fungsi bench_*");
     println!("  format [jalur] [--cek]  Memformat berkas kode sumber Komolang");
+    println!("  audit [jalur]           Memindai keamanan kode dan kerentanan supply-chain paket");
     println!("  dok [jalur] [-o dir]    Menghasilkan dokumentasi kode (Markdown & HTML)");
     println!("  repl                    Menjalankan sesi Read-Eval-Print Loop interaktif");
     println!("  debug <berkas.komo>     Inspeksi mendalam AST, tabel simbol semantik, dan KIR SSA");
