@@ -1,18 +1,14 @@
 // Copyright (c) kangpcode (Dhafa Nazula Permadi). Licensed under MIT or Apache-2.0.
 
 use std::env;
-use std::fs;
 use std::path::{Path, PathBuf};
 use std::process;
 
-use komo_codegen::{bangun_executable_native, jalankan_jit, KonfigurasiTarget};
-use komo_diag::render_semua;
-use komo_ir::ModulIr;
-use komo_parser::urai;
-
-const VERSI: &str = env!("CARGO_PKG_VERSION");
-const HAK_CIPTA: &str =
-    "Copyright (c) 2026 kangpcode (Dhafa Nazula Permadi). Lisensi MIT atau Apache-2.0.";
+use komo::lsp;
+use komo::perintah;
+use komo::{
+    bangun_berkas, cetak_assembly, cetak_kir, jalankan_berkas, periksa_berkas, HAK_CIPTA, VERSI,
+};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -28,6 +24,129 @@ fn main() {
         "bantuan" | "--bantuan" | "-h" | "--help" => {
             tampilkan_bantuan();
         }
+        "baru" => {
+            if args.len() < 3 {
+                eprintln!("Kesalahan: Berikan nama proyek yang ingin dibuat.");
+                eprintln!("Contoh: komo baru proyek_saya");
+                process::exit(1);
+            }
+            if let Err(e) = perintah::buat_proyek_baru(&args[2]) {
+                eprintln!("❌ {}", e);
+                process::exit(1);
+            }
+        }
+        "format" => {
+            let jalur = if args.len() >= 3 && !args[2].starts_with('-') {
+                args[2].as_str()
+            } else {
+                "."
+            };
+            let cek = args.iter().any(|a| a == "--cek" || a == "--check");
+            if let Err(e) = perintah::format_kode(jalur, cek) {
+                eprintln!("❌ {}", e);
+                process::exit(1);
+            }
+        }
+        "dok" => {
+            let jalur = if args.len() >= 3 && !args[2].starts_with('-') {
+                args[2].as_str()
+            } else {
+                "."
+            };
+            let mut keluar = "dok_keluaran";
+            for i in 0..args.len() {
+                if (args[i] == "-o" || args[i] == "--keluar") && i + 1 < args.len() {
+                    keluar = args[i + 1].as_str();
+                }
+            }
+            if let Err(e) = perintah::buat_dokumentasi(jalur, keluar) {
+                eprintln!("❌ {}", e);
+                process::exit(1);
+            }
+        }
+        "uji" => {
+            let jalur = if args.len() >= 3 && !args[2].starts_with('-') {
+                Some(args[2].as_str())
+            } else {
+                None
+            };
+            if let Err(e) = perintah::jalankan_pengujian(jalur) {
+                eprintln!("❌ {}", e);
+                process::exit(1);
+            }
+        }
+        "bench" => {
+            let jalur = if args.len() >= 3 && !args[2].starts_with('-') {
+                args[2].as_str()
+            } else {
+                "benches"
+            };
+            let mut iterasi = 1000usize;
+            for i in 0..args.len() {
+                if args[i].starts_with("--iterasi=") {
+                    if let Ok(n) = args[i]["--iterasi=".len()..].parse::<usize>() {
+                        iterasi = n;
+                    }
+                }
+            }
+            if let Err(e) = perintah::jalankan_benchmark(jalur, iterasi) {
+                eprintln!("❌ {}", e);
+                process::exit(1);
+            }
+        }
+        "tambah" => {
+            if args.len() < 3 {
+                eprintln!("Kesalahan: Berikan nama paket yang ingin ditambahkan.");
+                eprintln!("Contoh: komo tambah nama_paket");
+                process::exit(1);
+            }
+            if let Err(e) = perintah::tambah_dependensi(&args[2]) {
+                eprintln!("❌ {}", e);
+                process::exit(1);
+            }
+        }
+        "perbarui" => {
+            if let Err(e) = perintah::perbarui_dependensi() {
+                eprintln!("❌ {}", e);
+                process::exit(1);
+            }
+        }
+        "bersih" => {
+            if let Err(e) = perintah::bersihkan_target() {
+                eprintln!("❌ {}", e);
+                process::exit(1);
+            }
+        }
+        "rilis" => {
+            let berkas = if args.len() >= 3 && !args[2].starts_with('-') {
+                args[2].as_str()
+            } else if Path::new("src/utama.komo").exists() {
+                "src/utama.komo"
+            } else {
+                "utama.komo"
+            };
+            if let Err(e) = perintah::rilis_aplikasi(berkas) {
+                eprintln!("❌ {}", e);
+                process::exit(1);
+            }
+        }
+        "lsp" => {
+            lsp::jalankan_server_lsp();
+        }
+        "repl" => {
+            perintah::jalankan_repl();
+        }
+        "debug" => {
+            if args.len() < 3 {
+                eprintln!("Kesalahan: Berikan jalur berkas .komo untuk diinspeksi debug.");
+                eprintln!("Contoh: komo debug berkas.komo");
+                process::exit(1);
+            }
+            if let Err(e) = perintah::debug_berkas(&args[2]) {
+                eprintln!("❌ {}", e);
+                process::exit(1);
+            }
+        }
         "periksa" => {
             if args.len() < 3 {
                 eprintln!("Kesalahan: Berikan jalur berkas .komo untuk diperiksa.");
@@ -35,7 +154,13 @@ fn main() {
                 process::exit(1);
             }
             let dump_kir = args.iter().any(|a| a == "--dump-kir");
-            periksa_berkas(&args[2], dump_kir);
+            match periksa_berkas(&args[2], dump_kir) {
+                Ok(hasil) => println!("{}", hasil),
+                Err(e) => {
+                    eprintln!("{}", e);
+                    process::exit(1);
+                }
+            }
         }
         "ir" => {
             if args.len() < 3 {
@@ -44,7 +169,13 @@ fn main() {
                 process::exit(1);
             }
             let optimasi = args.iter().any(|a| a == "--optimasi" || a == "-O");
-            cetak_kir(&args[2], optimasi);
+            match cetak_kir(&args[2], optimasi) {
+                Ok(kir) => println!("{}", kir),
+                Err(e) => {
+                    eprintln!("{}", e);
+                    process::exit(1);
+                }
+            }
         }
         "bangun" => {
             if args.len() < 3 {
@@ -61,7 +192,15 @@ fn main() {
                     jalur_keluar = PathBuf::from(&args[i + 1]);
                 }
             }
-            bangun_berkas(berkas, &jalur_keluar, optimasi, pakai_asm);
+            match bangun_berkas(berkas, &jalur_keluar, optimasi, pakai_asm) {
+                Ok(jalur_biner) => {
+                    println!("✅ Berhasil membangun biner native: {}", jalur_biner.display());
+                }
+                Err(e) => {
+                    eprintln!("❌ {}", e);
+                    process::exit(1);
+                }
+            }
         }
         "asm" => {
             if args.len() < 3 {
@@ -72,7 +211,13 @@ fn main() {
             let berkas = &args[2];
             let optimasi = args.iter().any(|a| a == "--optimasi" || a == "-O");
             let arm64 = args.iter().any(|a| a == "--arsitektur=arm64" || a == "--target=arm64");
-            tampilkan_assembly(berkas, optimasi, arm64);
+            match cetak_assembly(berkas, optimasi, arm64) {
+                Ok(asm) => print!("{}", asm),
+                Err(e) => {
+                    eprintln!("❌ {}", e);
+                    process::exit(1);
+                }
+            }
         }
         "jalankan" => {
             if args.len() < 3 {
@@ -82,7 +227,17 @@ fn main() {
             }
             let berkas = &args[2];
             let optimasi = args.iter().any(|a| a == "--optimasi" || a == "-O");
-            jalankan_berkas(berkas, optimasi);
+            match jalankan_berkas(berkas, optimasi) {
+                Ok(kode) => {
+                    if kode != 0 {
+                        process::exit(kode as i32);
+                    }
+                }
+                Err(e) => {
+                    eprintln!("❌ {}", e);
+                    process::exit(1);
+                }
+            }
         }
         perintah_tak_dikenal => {
             eprintln!("Perintah tidak dikenal: '{}'", perintah_tak_dikenal);
@@ -98,176 +253,35 @@ fn tampilkan_versi() {
 }
 
 fn tampilkan_bantuan() {
+    println!("Komolang (Komodo Language) - Kompilator & Kakas Bahasa Pemrograman Asli Indonesia");
     println!("Penggunaan: komo [perintah] [opsi]");
     println!();
-    println!("Perintah Utama:");
-    println!("  bangun <berkas.komo>    Mengompilasi menjadi executable (--backend=asm|cranelift, -o, --optimasi)");
-    println!("  jalankan <berkas.komo>  Menjalankan program Komolang langsung via mesin JIT native (--optimasi)");
-    println!("  asm <berkas.komo>       Mencetak kode assembly x86_64 / ARM64 mandiri ke stdout (--arsitektur=arm64)");
-    println!("  periksa <berkas.komo>   Memeriksa sintaks leksikal dan tata bahasa (--dump-kir)");
-    println!("  ir <berkas.komo>        Menghasilkan dan menampilkan dump KIR SSA (--optimasi)");
-    println!("  versi                   Menampilkan informasi versi Komolang");
-    println!("  bantuan                 Menampilkan pesan bantuan ini");
+    println!("Perintah Manajemen Proyek:");
+    println!("  baru <nama>             Membuat struktur scaffold proyek Komolang baru");
+    println!("  tambah <paket>          Menambahkan dependensi paket ke komo.toml");
+    println!("  perbarui                Memperbarui dependensi proyek");
+    println!("  bersih                  Membersihkan artefak kompilasi di direktori target/");
     println!();
-    println!("Perintah Lanjutan (Rencana Tahap 7):");
-    println!("  baru <nama>             Membuat proyek Komolang baru");
-    println!("  uji                     Menjalankan suite tes otomatis");
-    println!("  format                  Memformat berkas kode sumber Komolang");
-}
-
-fn parsing_dan_lowering(jalur: &str, optimasi: bool) -> ModulIr {
-    let konten = match fs::read_to_string(jalur) {
-        Ok(k) => k,
-        Err(e) => {
-            eprintln!("Gagal membaca berkas '{}': {}", jalur, e);
-            process::exit(1);
-        }
-    };
-
-    let hasil_urai = urai(&konten);
-    if !hasil_urai.berhasil() {
-        eprintln!("{}", render_semua(&hasil_urai.diagnostik, jalur, &konten));
-        process::exit(1);
-    }
-
-    let hasil_sema = komo_sema::periksa(&hasil_urai.berkas);
-    if !hasil_sema.berhasil() {
-        eprintln!("{}", render_semua(&hasil_sema.diagnostik, jalur, &konten));
-        process::exit(1);
-    }
-
-    let mut modul_ir = komo_ir::turunkan_ke_kir(&hasil_urai.berkas, &hasil_sema);
-
-    if optimasi {
-        let pengoptimal = komo_ir::Pengoptimal::baru(2);
-        pengoptimal.optimalkan_modul(&mut modul_ir);
-    }
-
-    if let Err(galat_verif) = komo_ir::verifikasi_modul(&modul_ir) {
-        eprintln!("❌ Galat Verifikasi KIR:");
-        for g in galat_verif {
-            eprintln!("  - {}", g);
-        }
-        process::exit(1);
-    }
-
-    modul_ir
-}
-
-fn bangun_berkas(jalur: &str, output: &Path, optimasi: bool, pakai_asm: bool) {
-    let modul_ir = parsing_dan_lowering(jalur, optimasi);
-
-    if pakai_asm {
-        println!(
-            "Mengompilasi '{}' menjadi biner native '{}' (backend: ASM internal)...",
-            jalur,
-            output.display()
-        );
-        match komo_asm::bangun_executable_asm(&modul_ir, output) {
-            Ok(path) => {
-                println!("✅ Berhasil membangun biner native (ASM): {}", path.display());
-            }
-            Err(e) => {
-                eprintln!("❌ Gagal membangun biner ASM: {}", e);
-                process::exit(1);
-            }
-        }
-        return;
-    }
-
-    let mut target = KonfigurasiTarget::untuk_host();
-    target.optimasi = optimasi;
-
-    println!(
-        "Mengompilasi '{}' menjadi biner native '{}' (target: {})...",
-        jalur,
-        output.display(),
-        target.sebagai_triple_str()
-    );
-
-    match bangun_executable_native(&modul_ir, &target, output) {
-        Ok(path) => {
-            println!("✅ Berhasil membangun biner native: {}", path.display());
-        }
-        Err(e) => {
-            eprintln!("❌ Gagal menautkan biner native: {}", e);
-            process::exit(1);
-        }
-    }
-}
-
-fn tampilkan_assembly(jalur: &str, optimasi: bool, arm64: bool) {
-    let modul_ir = parsing_dan_lowering(jalur, optimasi);
-    let target = if arm64 {
-        komo_asm::TargetArsitekturAsm::AArch64
-    } else {
-        komo_asm::TargetArsitekturAsm::X86_64
-    };
-    let asm = komo_asm::kompilasi_ke_assembly(&modul_ir, target);
-    print!("{}", asm);
-}
-
-fn jalankan_berkas(jalur: &str, optimasi: bool) {
-    let modul_ir = parsing_dan_lowering(jalur, optimasi);
-    match jalankan_jit(&modul_ir) {
-        Ok(kode_keluar) => {
-            if kode_keluar != 0 {
-                process::exit(kode_keluar as i32);
-            }
-        }
-        Err(e) => {
-            eprintln!("❌ Gagal mengeksekusi program: {}", e);
-            process::exit(1);
-        }
-    }
-}
-
-fn periksa_berkas(jalur: &str, dump_kir: bool) {
-    let konten = match fs::read_to_string(jalur) {
-        Ok(k) => k,
-        Err(e) => {
-            eprintln!("Gagal membaca berkas '{}': {}", jalur, e);
-            process::exit(1);
-        }
-    };
-
-    println!("Memeriksa berkas '{}'...", jalur);
-
-    let hasil_urai = urai(&konten);
-    if !hasil_urai.berhasil() {
-        eprintln!("{}", render_semua(&hasil_urai.diagnostik, jalur, &konten));
-        process::exit(1);
-    }
-
-    let hasil_sema = komo_sema::periksa(&hasil_urai.berkas);
-    if !hasil_sema.berhasil() {
-        eprintln!("{}", render_semua(&hasil_sema.diagnostik, jalur, &konten));
-        process::exit(1);
-    }
-
-    println!(
-        "✅ Sintaks dan semantik valid! Paket: '{}', Impor: {}, Deklarasi: {}",
-        hasil_urai.berkas.paket.nama.nama,
-        hasil_urai.berkas.impor.len(),
-        hasil_urai.berkas.deklarasi.len()
-    );
-
-    if dump_kir {
-        let modul_ir = komo_ir::turunkan_ke_kir(&hasil_urai.berkas, &hasil_sema);
-        if let Err(galat_verif) = komo_ir::verifikasi_modul(&modul_ir) {
-            eprintln!("❌ Galat Verifikasi KIR:");
-            for g in galat_verif {
-                eprintln!("  - {}", g);
-            }
-            process::exit(1);
-        }
-        println!("\n{}", komo_ir::cetak_modul(&modul_ir));
-    }
-}
-
-fn cetak_kir(jalur: &str, optimasi: bool) {
-    let modul_ir = parsing_dan_lowering(jalur, optimasi);
-    println!("{}", komo_ir::cetak_modul(&modul_ir));
+    println!("Perintah Pengembangan & Kualitas Kode:");
+    println!("  uji [jalur]             Menjalankan suite pengujian otomatis fungsi tes_*");
+    println!("  bench [jalur]           Menjalankan tolok ukur (benchmark) fungsi bench_*");
+    println!("  format [jalur] [--cek]  Memformat berkas kode sumber Komolang");
+    println!("  dok [jalur] [-o dir]    Menghasilkan dokumentasi kode (Markdown & HTML)");
+    println!("  repl                    Menjalankan sesi Read-Eval-Print Loop interaktif");
+    println!("  debug <berkas.komo>     Inspeksi mendalam AST, tabel simbol semantik, dan KIR SSA");
+    println!("  lsp                     Menjalankan server Language Server Protocol (stdin/stdout)");
+    println!();
+    println!("Perintah Kompilasi & Eksekusi:");
+    println!("  jalankan <berkas.komo>  Mengeksekusi program Komolang langsung via JIT (--optimasi)");
+    println!("  bangun <berkas.komo>    Mengompilasi menjadi executable native (-o, --backend=asm|cranelift)");
+    println!("  rilis [berkas.komo]     Membangun biner rilis dengan optimasi level maksimal");
+    println!("  asm <berkas.komo>       Mencetak kode assembly mandiri x86_64 atau ARM64");
+    println!("  ir <berkas.komo>        Menampilkan representasi KIR SSA (--optimasi)");
+    println!("  periksa <berkas.komo>   Memeriksa keabsahan sintaks dan analisis tipe semantik");
+    println!();
+    println!("Perintah Umum:");
+    println!("  versi                   Menampilkan informasi versi Komolang");
+    println!("  bantuan                 Menampilkan panduan bantuan ini");
 }
 
 #[cfg(test)]

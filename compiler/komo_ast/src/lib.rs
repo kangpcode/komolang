@@ -5,6 +5,7 @@
 //! kanonik di modul [`cetak`].
 
 pub mod cetak;
+pub use cetak::{cetak_berkas, cetak_ekspresi, cetak_tipe};
 
 /// Prioritas (binding power) simpul ekspresi; dipakai parser dan pretty-printer.
 pub const PRIORITAS_RENTANG: u8 = 4;

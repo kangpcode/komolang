@@ -1,0 +1,72 @@
+{
+  "name": "komolang-vscode",
+  "displayName": "Komolang (Bahasa Komodo)",
+  "description": "Dukungan resmi bahasa pemrograman Komolang untuk Visual Studio Code: Pewarnaan Sintaks, Cuplikan Kode, dan Integrasi LSP.",
+  "version": "0.1.0",
+  "publisher": "kangpcode",
+  "author": {
+    "name": "Dhafa Nazula Permadi (kangpcode)",
+    "email": "kangpcode@gmail.com"
+  },
+  "license": "MIT OR Apache-2.0",
+  "homepage": "https://github.com/kangpcode/komolang",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kangpcode/komolang.git"
+  },
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Linters",
+    "Formatters"
+  ],
+  "keywords": [
+    "komolang",
+    "komodo",
+    "indonesia",
+    "lsp",
+    "syntax"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "komo",
+        "aliases": ["Komolang", "komo", "komolang"],
+        "extensions": [".komo"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "komo",
+        "scopeName": "source.komo",
+        "path": "./syntaxes/komo.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "komo",
+        "path": "./snippets/komo.json"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Komolang",
+      "properties": {
+        "komolang.lsp.jalur": {
+          "type": "string",
+          "default": "komo",
+          "description": "Jalur executable CLI komo untuk menjalankan server LSP ('komo lsp')."
+        },
+        "komolang.format.saatSimpan": {
+          "type": "boolean",
+          "default": true,
+          "description": "Otomatis memformat berkas dengan komo format saat berkas disimpan."
+        }
+      }
+    }
+  }
+}

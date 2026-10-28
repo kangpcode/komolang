@@ -6,6 +6,10 @@ edition.workspace = true
 license.workspace = true
 description = "Command-Line Interface for the Komolang toolchain"
 
+[lib]
+name = "komo"
+path = "src/lib.rs"
+
 [[bin]]
 name = "komo"
 path = "src/main.rs"

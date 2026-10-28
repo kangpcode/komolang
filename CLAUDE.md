@@ -215,11 +215,11 @@ fungsi utama() {
 
 ### Tahap 7 — Tooling & CLI `komo`
 
-- [ ] `komo baru <nama>` (scaffold), `komo jalankan`, `komo bangun`, `komo uji`, `komo bench`.
-- [ ] `komo format` (formatter resmi, satu gaya baku), `komo periksa` (linter), `komo dok` (generator dokumentasi).
-- [ ] `komo tambah <paket>`, `komo perbarui`, `komo bersih`, `komo rilis`.
-- [ ] **Language Server (LSP)** + ekstensi VS Code (syntax highlight, autocomplete, diagnostik).
-- [ ] REPL `komo repl` dan `komo debug`.
+- [x] `komo baru <nama>` (scaffold), `komo jalankan`, `komo bangun`, `komo uji`, `komo bench`.
+- [x] `komo format` (formatter resmi, satu gaya baku), `komo periksa` (linter), `komo dok` (generator dokumentasi).
+- [x] `komo tambah <paket>`, `komo perbarui`, `komo bersih`, `komo rilis`.
+- [x] **Language Server (LSP)** + ekstensi VS Code (syntax highlight, autocomplete, diagnostik).
+- [x] REPL `komo repl` dan `komo debug`.
 
 * **Selesai bila:** pemula bisa dari `komo baru` sampai program jalan dalam kurang dari 5 menit.
 

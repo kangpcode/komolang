@@ -30,6 +30,8 @@ mod tes_codegen_asm;
 mod tes_runtime;
 #[cfg(test)]
 mod tes_std;
+#[cfg(test)]
+mod tes_cli_tooling;
 
 #[cfg(test)]
 mod tests {

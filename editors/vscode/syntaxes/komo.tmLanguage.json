@@ -1,0 +1,180 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Komolang",
+  "scopeName": "source.komo",
+  "patterns": [
+    { "include": "#komentar" },
+    { "include": "#teks" },
+    { "include": "#kata_kunci" },
+    { "include": "#tipe_bawaan" },
+    { "include": "#konstanta_literal" },
+    { "include": "#angka" },
+    { "include": "#definisi_fungsi" },
+    { "include": "#pemanggilan_fungsi" },
+    { "include": "#operator" },
+    { "include": "#tanda_kurung" }
+  ],
+  "repository": {
+    "komentar": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.komo",
+          "match": "//.*$"
+        },
+        {
+          "name": "comment.block.komo",
+          "begin": "/\\*",
+          "end": "\\*/"
+        }
+      ]
+    },
+    "teks": {
+      "name": "string.quoted.double.komo",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.komo",
+          "match": "\\\\([nrt\\\\\"'0]|x[0-9a-fA-F]{2}|u\\{[0-9a-fA-F]+\\})"
+        },
+        {
+          "name": "meta.interpolation.komo",
+          "begin": "\\{",
+          "end": "\\}",
+          "patterns": [
+            { "include": "$self" }
+          ]
+        }
+      ]
+    },
+    "kata_kunci": {
+      "patterns": [
+        {
+          "name": "keyword.control.komo",
+          "match": "\\b(jika|lainnya|selagi|untuk|dalam|cocok|lanjut|henti|kembali|tunda|jalankan)\\b"
+        },
+        {
+          "name": "keyword.declaration.komo",
+          "match": "\\b(fungsi|tipe|struktur|antarmuka|enum|biar|var|konst|paket|impor|sebagai|eksternal|publik)\\b"
+        },
+        {
+          "name": "keyword.operator.logical.komo",
+          "match": "\\b(dan|atau|bukan)\\b"
+        },
+        {
+          "name": "keyword.channel.komo",
+          "match": "\\b(saluran)\\b"
+        }
+      ]
+    },
+    "tipe_bawaan": {
+      "patterns": [
+        {
+          "name": "entity.name.type.primitive.komo",
+          "match": "\\b(bulat|desimal|teks|bool|byte|nihil|larik)\\b"
+        },
+        {
+          "name": "entity.name.type.user.komo",
+          "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+        }
+      ]
+    },
+    "konstanta_literal": {
+      "patterns": [
+        {
+          "name": "constant.language.boolean.komo",
+          "match": "\\b(benar|salah)\\b"
+        },
+        {
+          "name": "constant.language.nil.komo",
+          "match": "\\b(nihil)\\b"
+        }
+      ]
+    },
+    "angka": {
+      "patterns": [
+        {
+          "name": "constant.numeric.hex.komo",
+          "match": "\\b0x[0-9a-fA-F_]+\\b"
+        },
+        {
+          "name": "constant.numeric.binary.komo",
+          "match": "\\b0b[01_]+\\b"
+        },
+        {
+          "name": "constant.numeric.octal.komo",
+          "match": "\\b0o[0-7_]+\\b"
+        },
+        {
+          "name": "constant.numeric.float.komo",
+          "match": "\\b[0-9][0-9_]*\\.[0-9][0-9_]*([eE][+-]?[0-9_]+)?\\b"
+        },
+        {
+          "name": "constant.numeric.integer.komo",
+          "match": "\\b[0-9][0-9_]*\\b"
+        }
+      ]
+    },
+    "definisi_fungsi": {
+      "match": "\\b(fungsi)\\s+([a-z_][a-zA-Z0-9_]*)",
+      "captures": {
+        "1": { "name": "keyword.declaration.komo" },
+        "2": { "name": "entity.name.function.komo" }
+      }
+    },
+    "pemanggilan_fungsi": {
+      "match": "\\b([a-z_][a-zA-Z0-9_]*)\\s*(?=\\()",
+      "captures": {
+        "1": { "name": "entity.name.function.call.komo" }
+      }
+    },
+    "operator": {
+      "patterns": [
+        {
+          "name": "keyword.operator.arrow.komo",
+          "match": "(->|=>)"
+        },
+        {
+          "name": "keyword.operator.range.komo",
+          "match": "(\\.\\.=|\\.\\.)"
+        },
+        {
+          "name": "keyword.operator.assignment.compound.komo",
+          "match": "(\\+=|-=|\\*=|/=|%=)"
+        },
+        {
+          "name": "keyword.operator.comparison.komo",
+          "match": "(==|!=|<=|>=|<|>)"
+        },
+        {
+          "name": "keyword.operator.arithmetic.komo",
+          "match": "(\\+|-|\\*|/|%)"
+        },
+        {
+          "name": "keyword.operator.assignment.komo",
+          "match": "(=)"
+        }
+      ]
+    },
+    "tanda_kurung": {
+      "patterns": [
+        {
+          "name": "punctuation.bracket.curly.komo",
+          "match": "[{}]"
+        },
+        {
+          "name": "punctuation.bracket.round.komo",
+          "match": "[()]"
+        },
+        {
+          "name": "punctuation.bracket.square.komo",
+          "match": "[\\[\\]]"
+        },
+        {
+          "name": "punctuation.separator.komo",
+          "match": "[,;:]"
+        }
+      ]
+    }
+  }
+}

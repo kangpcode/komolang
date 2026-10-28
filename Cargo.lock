@@ -391,6 +391,7 @@ dependencies = [
 name = "komo_tests"
 version = "0.1.0"
 dependencies = [
+ "komo",
  "komo_asm",
  "komo_ast",
  "komo_codegen",

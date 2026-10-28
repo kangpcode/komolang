@@ -1,0 +1,123 @@
+{
+  "Deklarasi Fungsi": {
+    "prefix": "fungsi",
+    "body": [
+      "fungsi ${1:nama_fungsi}(${2:arg}: ${3:tipe}) ${4:tipe_kembali} {",
+      "\t${0:// implementasi}",
+      "}"
+    ],
+    "description": "Mendefinisikan fungsi baru dalam Komolang"
+  },
+  "Fungsi Utama": {
+    "prefix": "utama",
+    "body": [
+      "paket utama",
+      "",
+      "impor \"std/cetak\"",
+      "",
+      "publik fungsi utama() {",
+      "\tcetak.baris(\"${1:Halo, Dunia!}\")",
+      "}"
+    ],
+    "description": "Kerangka fungsi utama titik masuk program Komolang"
+  },
+  "Kondisi Jika": {
+    "prefix": "jika",
+    "body": [
+      "jika ${1:kondisi} {",
+      "\t${0}",
+      "}"
+    ],
+    "description": "Blok percabangan kondisi jika"
+  },
+  "Kondisi Jika Lainnya": {
+    "prefix": "jikalain",
+    "body": [
+      "jika ${1:kondisi} {",
+      "\t${2}",
+      "} lainnya {",
+      "\t${0}",
+      "}"
+    ],
+    "description": "Blok percabangan kondisi jika-lainnya"
+  },
+  "Perulangan Selagi": {
+    "prefix": "selagi",
+    "body": [
+      "selagi ${1:kondisi} {",
+      "\t${0}",
+      "}"
+    ],
+    "description": "Perulangan bersyarat selagi (while loop)"
+  },
+  "Perulangan Untuk": {
+    "prefix": "untuk",
+    "body": [
+      "untuk ${1:i} dalam ${2:0..10} {",
+      "\t${0}",
+      "}"
+    ],
+    "description": "Perulangan rentang atau elemen koleksi (for loop)"
+  },
+  "Definisi Struktur": {
+    "prefix": "struktur",
+    "body": [
+      "tipe ${1:NamaStruktur} = struktur {",
+      "\t${2:bidang}: ${3:tipe}",
+      "}"
+    ],
+    "description": "Mendefinisikan tipe data bentukan struktur"
+  },
+  "Definisi Antarmuka": {
+    "prefix": "antarmuka",
+    "body": [
+      "tipe ${1:NamaAntarmuka} = antarmuka {",
+      "\tfungsi ${2:nama_metode}(${3:arg}: ${4:tipe}) ${5:tipe_kembali}",
+      "}"
+    ],
+    "description": "Mendefinisikan kontrak antarmuka (interface)"
+  },
+  "Definisi Enum": {
+    "prefix": "enum",
+    "body": [
+      "tipe ${1:NamaEnum} = enum {",
+      "\t${2:VarianSatu},",
+      "\t${3:VarianDua}",
+      "}"
+    ],
+    "description": "Mendefinisikan tipe aljabar enumerasi"
+  },
+  "Pencocokan Pola Cocok": {
+    "prefix": "cocok",
+    "body": [
+      "cocok ${1:nilai} {",
+      "\t${2:pola} => { ${3} }",
+      "\tlainnya => { ${0} }",
+      "}"
+    ],
+    "description": "Ekspresi pencocokan pola eksaustif (match)"
+  },
+  "Fungsi Pengujian Uji": {
+    "prefix": "tes",
+    "body": [
+      "fungsi tes_${1:fitur}() bool {",
+      "\tbiar hasil = ${2:ekspresi}",
+      "\tkembali hasil == ${3:ekspektasi}",
+      "}"
+    ],
+    "description": "Fungsi pengujian otomatis untuk runner 'komo uji'"
+  },
+  "Fungsi Tolak Ukur Benchmark": {
+    "prefix": "bench",
+    "body": [
+      "fungsi bench_${1:operasi}() bulat {",
+      "\tvar total = 0",
+      "\tuntuk i dalam 0..1000 {",
+      "\t\ttotal += ${2:1}",
+      "\t}",
+      "\tkembali total",
+      "}"
+    ],
+    "description": "Fungsi benchmark performa untuk runner 'komo bench'"
+  }
+}
