@@ -3,6 +3,8 @@
 
 paket contoh_15
 
+impor "std/cetak"
+
 publik fungsi utama() {
     biar a = [1, 2, 3, 4]
     biar b = [5, 6, 7, 8]
@@ -12,5 +14,5 @@ publik fungsi utama() {
         c[i] = a[i] + b[i]
     }
 
-    cetak("Hasil matriks C: [", c[0], ", ", c[1], ", ", c[2], ", ", c[3], "]")
+    cetak.baris("Hasil matriks C: [", c[0], ", ", c[1], ", ", c[2], ", ", c[3], "]")
 }

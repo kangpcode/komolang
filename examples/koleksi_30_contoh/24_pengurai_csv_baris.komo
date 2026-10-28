@@ -3,13 +3,15 @@
 
 paket contoh_24
 
-struktur BarisPengguna {
-    id: bulat,
-    nama: teks,
-    kota: teks,
+impor "std/cetak"
+
+tipe BarisPengguna struktur {
+    id: bulat
+    nama: teks
+    kota: teks
 }
 
 publik fungsi utama() {
-    biar p = BarisPengguna { id: 1, nama: "Ahmad", kota: "Jakarta" }
-    cetak("ID: ", p.id, ", Nama: ", p.nama, ", Kota: ", p.kota)
+    biar p = BarisPengguna{id: 1, nama: "Ahmad", kota: "Jakarta"}
+    cetak.baris("ID: {p.id}, Nama: {p.nama}, Kota: {p.kota}")
 }

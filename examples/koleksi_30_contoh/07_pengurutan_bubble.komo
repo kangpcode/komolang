@@ -3,6 +3,8 @@
 
 paket contoh_07
 
+impor "std/cetak"
+
 fungsi urutkan(larik: pinjam_var [bulat]) {
     var panjang = 5
     untuk i dalam 0..panjang {
@@ -19,5 +21,5 @@ fungsi urutkan(larik: pinjam_var [bulat]) {
 publik fungsi utama() {
     var angka = [64, 34, 25, 12, 22]
     urutkan(pinjam_var angka)
-    cetak("Data setelah diurutkan: ", angka[0], ", ", angka[1], ", ", angka[2])
+    cetak.baris("Data setelah diurutkan: ", angka[0], ", ", angka[1], ", ", angka[2])
 }

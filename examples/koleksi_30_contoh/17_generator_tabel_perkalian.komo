@@ -3,11 +3,13 @@
 
 paket contoh_17
 
+impor "std/cetak"
+
 publik fungsi utama() {
     biar basis = 7
-    cetak("--- Tabel Perkalian ", basis, " ---")
+    cetak.baris("--- Tabel Perkalian ", basis, " ---")
     untuk i dalam 1..=5 {
         biar hasil = basis * i
-        cetak(basis, " x ", i, " = ", hasil)
+        cetak.baris(basis, " x ", i, " = ", hasil)
     }
 }

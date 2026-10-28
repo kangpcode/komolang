@@ -3,6 +3,8 @@
 
 paket contoh_06
 
+impor "std/cetak"
+
 fungsi cari_biner(larik: pinjam [bulat], target: bulat) bulat {
     var rendah: bulat = 0
     var tinggi: bulat = 6 // Indeks maksimum contoh
@@ -24,5 +26,5 @@ fungsi cari_biner(larik: pinjam [bulat], target: bulat) bulat {
 publik fungsi utama() {
     biar data = [2, 5, 8, 12, 16, 23, 38]
     biar posisi = cari_biner(pinjam data, 16)
-    cetak("Posisi elemen 16: ", posisi)
+    cetak.baris("Posisi elemen 16: ", posisi)
 }

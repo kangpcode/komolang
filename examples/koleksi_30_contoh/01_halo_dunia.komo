@@ -3,7 +3,9 @@
 
 paket contoh_01
 
+impor "std/cetak"
+
 publik fungsi utama() {
     biar pesan = "Halo dari bahasa Komolang!"
-    cetak(pesan)
+    cetak.baris(pesan)
 }

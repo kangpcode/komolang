@@ -3,8 +3,10 @@
 
 paket contoh_11
 
+impor "std/cetak"
+
 fungsi cek_palindrom(kata: pinjam teks) bool {
-    biar len = kata.panjang()
+    biar len = kata.panjang
     jika len <= 1 {
         kembali benar
     }
@@ -15,6 +17,6 @@ fungsi cek_palindrom(kata: pinjam teks) bool {
 publik fungsi utama() {
     biar kata = "katak"
     jika cek_palindrom(pinjam kata) {
-        cetak("Kata 'katak' adalah palindrom!")
+        cetak.baris("Kata 'katak' adalah palindrom!")
     }
 }

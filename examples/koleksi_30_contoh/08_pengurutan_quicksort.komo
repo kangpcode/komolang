@@ -3,6 +3,8 @@
 
 paket contoh_08
 
+impor "std/cetak"
+
 fungsi partisi(larik: pinjam_var [bulat], rendah: bulat, tinggi: bulat) bulat {
     biar pivot = larik[tinggi]
     var i = rendah - 1
@@ -33,5 +35,5 @@ fungsi quicksort(larik: pinjam_var [bulat], rendah: bulat, tinggi: bulat) {
 publik fungsi utama() {
     var data = [10, 80, 30, 90, 40, 50, 70]
     quicksort(pinjam_var data, 0, 6)
-    cetak("QuickSort selesai! Elemen terkecil: ", data[0])
+    cetak.baris("QuickSort selesai! Elemen terkecil: ", data[0])
 }

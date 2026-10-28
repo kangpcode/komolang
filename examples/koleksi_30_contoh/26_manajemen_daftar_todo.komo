@@ -3,19 +3,19 @@
 
 paket contoh_26
 
-struktur Tugas {
-    judul: teks,
-    selesai: bool,
+impor "std/cetak"
+
+tipe Tugas struktur {
+    judul: teks
+    selesai: bool
 }
 
-impl Tugas {
-    fungsi selesaikan(diri: pinjam_var Tugas) {
-        diri.selesai = benar
-    }
+fungsi (diri: pinjam_var Tugas) selesaikan() {
+    diri.selesai = benar
 }
 
 publik fungsi utama() {
-    var t = Tugas { judul: "Belajar Komolang", selesai: salah }
+    var t = Tugas{judul: "Belajar Komolang", selesai: salah}
     t.selesaikan()
-    cetak("Tugas '", t.judul, "' status selesai: ", t.selesai)
+    cetak.baris("Tugas selesai: {t.selesai}")
 }

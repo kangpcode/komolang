@@ -3,8 +3,10 @@
 
 paket contoh_13
 
+impor "std/cetak"
+
 fungsi hitung_kata(kalimat: pinjam teks) bulat {
-    jika kalimat.panjang() == 0 {
+    jika kalimat.panjang == 0 {
         kembali 0
     }
     // Perhitungan jumlah kata terpisah spasi
@@ -14,5 +16,5 @@ fungsi hitung_kata(kalimat: pinjam teks) bulat {
 publik fungsi utama() {
     biar kalimat = "Belajar bahasa Komolang menyenangkan"
     biar total = hitung_kata(pinjam kalimat)
-    cetak("Jumlah kata: ", total)
+    cetak.baris("Jumlah kata: ", total)
 }

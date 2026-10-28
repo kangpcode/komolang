@@ -3,8 +3,10 @@
 
 paket contoh_30
 
+impor "std/cetak"
+
 fungsi proses_perintah(cmd: pinjam teks) teks {
-    jika cmd.panjang() == 0 {
+    jika cmd.panjang == 0 {
         kembali "Gunakan --bantuan untuk opsi perintah"
     }
     kembali "Perintah berhasil diproses"
@@ -13,5 +15,5 @@ fungsi proses_perintah(cmd: pinjam teks) teks {
 publik fungsi utama() {
     biar opsi = "--versi"
     biar respons = proses_perintah(pinjam opsi)
-    cetak("Status CLI: ", respons)
+    cetak.baris("Status CLI: ", respons)
 }

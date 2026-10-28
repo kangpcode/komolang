@@ -1063,7 +1063,12 @@ impl PemeriksaSemantik {
                 let t_objek = self.evaluasi_ekspresi(objek);
                 let t_indeks = self.evaluasi_ekspresi(indeks);
 
-                match t_objek {
+                let tipe_inti = match t_objek {
+                    SemTipe::Pinjam { dalam, .. } => *dalam,
+                    lain => lain,
+                };
+
+                match tipe_inti {
                     SemTipe::Larik(item) => {
                         if !t_indeks.adalah_bulat() {
                             self.lapor(

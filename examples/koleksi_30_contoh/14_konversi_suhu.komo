@@ -3,6 +3,8 @@
 
 paket contoh_14
 
+impor "std/cetak"
+
 fungsi celcius_ke_fahrenheit(c: desimal) desimal {
     kembali (c * 1.8) + 32.0
 }
@@ -15,5 +17,5 @@ publik fungsi utama() {
     biar c = 100.0
     biar f = celcius_ke_fahrenheit(c)
     biar k = celcius_ke_kelvin(c)
-    cetak(c, " C = ", f, " F = ", k, " K")
+    cetak.baris(c, " C = ", f, " F = ", k, " K")
 }

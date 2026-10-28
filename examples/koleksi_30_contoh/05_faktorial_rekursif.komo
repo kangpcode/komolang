@@ -3,6 +3,8 @@
 
 paket contoh_05
 
+impor "std/cetak"
+
 fungsi faktorial(n: bulat) bulat {
     jika n <= 1 {
         kembali 1
@@ -12,5 +14,5 @@ fungsi faktorial(n: bulat) bulat {
 
 publik fungsi utama() {
     biar hasil = faktorial(6)
-    cetak("6! = ", hasil)
+    cetak.baris("6! = ", hasil)
 }

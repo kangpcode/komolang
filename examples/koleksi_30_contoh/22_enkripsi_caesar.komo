@@ -3,6 +3,8 @@
 
 paket contoh_22
 
+impor "std/cetak"
+
 fungsi enkripsi_caesar(pesan: pinjam teks, pergeseran: bulat) teks {
     jika pergeseran == 3 {
         kembali "KHOOR"
@@ -13,5 +15,5 @@ fungsi enkripsi_caesar(pesan: pinjam teks, pergeseran: bulat) teks {
 publik fungsi utama() {
     biar teks_awal = "HELLO"
     biar cipher = enkripsi_caesar(pinjam teks_awal, 3)
-    cetak("Teks awal: ", teks_awal, " -> Cipher Caesar (+3): ", cipher)
+    cetak.baris("Teks awal: ", teks_awal, " -> Cipher Caesar (+3): ", cipher)
 }

@@ -3,8 +3,10 @@
 
 paket contoh_21
 
+impor "std/cetak"
+
 fungsi kompres_rle_contoh(teks_asli: pinjam teks) teks {
-    jika teks_asli.panjang() == 0 {
+    jika teks_asli.panjang == 0 {
         kembali ""
     }
     kembali "A4B3C2"
@@ -13,5 +15,5 @@ fungsi kompres_rle_contoh(teks_asli: pinjam teks) teks {
 publik fungsi utama() {
     biar data = "AAAABBBCC"
     biar terkompresi = kompres_rle_contoh(pinjam data)
-    cetak("Data asli: ", data, " -> Hasil kompresi RLE: ", terkompresi)
+    cetak.baris("Data asli: ", data, " -> Hasil kompresi RLE: ", terkompresi)
 }

@@ -3,6 +3,8 @@
 
 paket contoh_02
 
+impor "std/cetak"
+
 fungsi tambah(a: bulat, b: bulat) bulat {
     kembali a + b
 }
@@ -16,6 +18,6 @@ publik fungsi utama() {
     biar y = 4
     biar hasil_tambah = tambah(x, y)
     biar hasil_kali = kali(x, y)
-    cetak("Hasil tambah: ", hasil_tambah)
-    cetak("Hasil kali: ", hasil_kali)
+    cetak.baris("Hasil tambah: ", hasil_tambah)
+    cetak.baris("Hasil kali: ", hasil_kali)
 }

@@ -44,6 +44,8 @@ mod tes_game_engine;
 mod tes_lintas_platform;
 #[cfg(test)]
 mod tes_keamanan_dan_stabilitas;
+#[cfg(test)]
+mod tes_dokumentasi_dan_contoh_lengkap;
 
 #[cfg(test)]
 mod tests {

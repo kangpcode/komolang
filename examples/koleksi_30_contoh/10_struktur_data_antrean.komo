@@ -3,40 +3,36 @@
 
 paket contoh_10
 
-struktur Antrean {
-    data: [bulat],
-    depan: bulat,
-    belakang: bulat,
+impor "std/cetak"
+
+tipe Antrean struktur {
+    data: [bulat]
+    depan: bulat
+    belakang: bulat
 }
 
-impl Antrean {
-    fungsi baru() Antrean {
-        kembali Antrean {
-            data: [0, 0, 0, 0, 0, 0, 0, 0],
-            depan: 0,
-            belakang: 0,
-        }
-    }
+fungsi (diri: pinjam_var Antrean) masuk(nilai: bulat) {
+    diri.data[diri.belakang] = nilai
+    diri.belakang += 1
+}
 
-    fungsi masuk(diri: pinjam_var Antrean, nilai: bulat) {
-        diri.data[diri.belakang] = nilai
-        diri.belakang += 1
+fungsi (diri: pinjam_var Antrean) keluar() bulat {
+    jika diri.depan >= diri.belakang {
+        kembali 0
     }
-
-    fungsi keluar(diri: pinjam_var Antrean) bulat {
-        jika diri.depan >= diri.belakang {
-            kembali 0
-        }
-        biar val = diri.data[diri.depan]
-        diri.depan += 1
-        kembali val
-    }
+    biar val = diri.data[diri.depan]
+    diri.depan += 1
+    kembali val
 }
 
 publik fungsi utama() {
-    var q = Antrean::baru()
+    var q = Antrean{
+        data: [0, 0, 0, 0, 0, 0, 0, 0],
+        depan: 0,
+        belakang: 0,
+    }
     q.masuk(100)
     q.masuk(200)
     biar item = q.keluar()
-    cetak("Item yang keluar pertama (FIFO): ", item)
+    cetak.baris("Item yang keluar pertama (FIFO): {item}")
 }

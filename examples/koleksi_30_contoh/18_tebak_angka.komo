@@ -3,6 +3,8 @@
 
 paket contoh_18
 
+impor "std/cetak"
+
 fungsi evaluasi_tebakan(tebakan: bulat, angka_rahasia: bulat) teks {
     jika tebakan < angka_rahasia {
         kembali "Terlalu rendah!"
@@ -18,7 +20,7 @@ publik fungsi utama() {
     biar hasil1 = evaluasi_tebakan(20, rahasia)
     biar hasil2 = evaluasi_tebakan(50, rahasia)
     biar hasil3 = evaluasi_tebakan(42, rahasia)
-    cetak(hasil1)
-    cetak(hasil2)
-    cetak(hasil3)
+    cetak.baris(hasil1)
+    cetak.baris(hasil2)
+    cetak.baris(hasil3)
 }

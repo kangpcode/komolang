@@ -3,22 +3,22 @@
 
 paket contoh_29
 
-struktur Partikel2D {
-    x: desimal,
-    y: desimal,
-    vx: desimal,
-    vy: desimal,
+impor "std/cetak"
+
+tipe Partikel2D struktur {
+    x: desimal
+    y: desimal
+    vx: desimal
+    vy: desimal
 }
 
-impl Partikel2D {
-    fungsi langkah(diri: pinjam_var Partikel2D, dt: desimal) {
-        diri.x += diri.vx * dt
-        diri.y += diri.vy * dt
-    }
+fungsi (diri: pinjam_var Partikel2D) langkah(dt: desimal) {
+    diri.x += diri.vx * dt
+    diri.y += diri.vy * dt
 }
 
 publik fungsi utama() {
-    var p = Partikel2D { x: 0.0, y: 0.0, vx: 10.0, vy: 5.0 }
+    var p = Partikel2D{x: 0.0, y: 0.0, vx: 10.0, vy: 5.0}
     p.langkah(0.5)
-    cetak("Posisi partikel setelah 0.5s: (", p.x, ", ", p.y, ")")
+    cetak.baris("Posisi partikel x: {p.x}, y: {p.y}")
 }

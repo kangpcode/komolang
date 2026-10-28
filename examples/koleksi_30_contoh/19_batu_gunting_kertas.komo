@@ -3,6 +3,8 @@
 
 paket contoh_19
 
+impor "std/cetak"
+
 // 1: Batu, 2: Gunting, 3: Kertas
 fungsi tentukan_pemenang(p1: bulat, p2: bulat) teks {
     jika p1 == p2 {
@@ -16,5 +18,5 @@ fungsi tentukan_pemenang(p1: bulat, p2: bulat) teks {
 
 publik fungsi utama() {
     biar hasil = tentukan_pemenang(1, 2) // Batu vs Gunting
-    cetak("Hasil permainan: ", hasil)
+    cetak.baris("Hasil permainan: ", hasil)
 }

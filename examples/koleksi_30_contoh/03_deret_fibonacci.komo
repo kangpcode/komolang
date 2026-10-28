@@ -3,6 +3,8 @@
 
 paket contoh_03
 
+impor "std/cetak"
+
 fungsi fibonacci(n: bulat) bulat {
     jika n <= 0 { kembali 0 }
     jika n == 1 { kembali 1 }
@@ -18,5 +20,5 @@ fungsi fibonacci(n: bulat) bulat {
 
 publik fungsi utama() {
     biar hasil = fibonacci(10)
-    cetak("Fibonacci ke-10: ", hasil)
+    cetak.baris("Fibonacci ke-10: ", hasil)
 }
